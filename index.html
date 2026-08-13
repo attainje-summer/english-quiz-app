@@ -363,7 +363,12 @@
       80%      { transform: translateX(3px); }
     }
 
-    /* TTS Button */
+    /* Quiz helper buttons */
+    .helper-buttons {
+      display: flex;
+      gap: 8px;
+      align-self: flex-start;
+    }
     .tts-btn {
       display: flex;
       align-items: center;
@@ -382,6 +387,8 @@
     }
     .tts-btn:active { background: var(--surface); transform: scale(0.97); }
     .tts-btn.playing { color: var(--primary2); border-color: var(--primary); }
+    .hint-btn { color: var(--orange); border-color: rgba(255,140,66,0.45); }
+    .hint-btn:active { background: rgba(255,140,66,0.12); }
 
     /* Hint Card */
     .hint-card {
@@ -1033,6 +1040,7 @@ let currentIndex = 0;
 let score = { correct: 0, wrong: 0, skipped: 0 };
 let answered = false;
 let currentSetKey = 'all';
+const QUIZ_SIZE = 10;
 let totalStats = JSON.parse(localStorage.getItem('edu_stats') || '{"done":0,"correct":0,"total":0}');
 
 /* ============================================================
@@ -1094,9 +1102,17 @@ function startQuiz(setKey) {
   let pool = setKey === 'all'
     ? QUIZ_DATA
     : QUIZ_DATA.filter(q => q.section === setKey);
-  
-  // Separate vocab cards and quiz cards
-  currentQuiz = shuffle([...pool]);
+
+  // 선택한 섹션이 10문제보다 적으면 다른 섹션 문제로 보충한다.
+  let selected = shuffle([...pool]);
+  if (selected.length < QUIZ_SIZE) {
+    const selectedIds = new Set(selected.map(q => q.id));
+    const supplements = shuffle(
+      QUIZ_DATA.filter(q => !selectedIds.has(q.id) && !q.is_vocab)
+    );
+    selected = selected.concat(supplements.slice(0, QUIZ_SIZE - selected.length));
+  }
+  currentQuiz = selected.slice(0, QUIZ_SIZE);
   currentIndex = 0;
   score = { correct: 0, wrong: 0, skipped: 0 };
   answered = false;
@@ -1141,9 +1157,12 @@ function renderQuestion() {
       <div class="en-card-label">영어 문장</div>
       <div class="en-sentence">${enHtml}</div>
     </div>
-    <button class="tts-btn" id="tts-btn" onclick="playTTS(this)">
-      🔊 듣기
-    </button>
+    <div class="helper-buttons">
+      <button class="tts-btn" id="tts-btn" onclick="playTTS(this)">
+        🔊 듣기
+      </button>
+      ${q.hint ? `<button class="tts-btn hint-btn" onclick="showHint(currentQuiz[currentIndex])">💡 힌트</button>` : ''}
+    </div>
     <div id="hint-area"></div>
     ${q.vocab_tip ? `<div class="vocab-card" style="display:none" id="vocab-reveal">
       <div class="vocab-word">${getTargetWord(q)}</div>
@@ -1197,6 +1216,7 @@ function getTargetWord(q) {
 
 function resetInputZone() {
   $('answer-input').value = '';
+  $('answer-input').disabled = false;
   $('answer-input').className = '';
   $('answer-input').classList.remove('hidden');
   $('btn-check').classList.remove('hidden');
