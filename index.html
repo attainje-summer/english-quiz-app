@@ -619,65 +619,7 @@
 
     <div class="home-card">
       <h3>📰 학습 세트 선택</h3>
-      <div class="lesson-item" id="lesson-all" onclick="startQuiz('all')">
-        <div class="lesson-icon purple">🌍</div>
-        <div class="lesson-info">
-          <div class="lesson-title">2026.7.8 전체 복습</div>
-          <div class="lesson-meta">뉴스 + 영화 + Tips · <span id="count-all">—</span>문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      </div>
-      <div class="lesson-item" onclick="startQuiz('news')">
-        <div class="lesson-icon purple">📡</div>
-        <div class="lesson-info">
-          <div class="lesson-title">CNN 뉴스 · 유럽 폭염</div>
-          <div class="lesson-meta">주요 표현 빈칸 · <span id="count-news">—</span>문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      </div>
-      <div class="lesson-item" onclick="startQuiz('tips')">
-        <div class="lesson-icon green">💡</div>
-        <div class="lesson-info">
-          <div class="lesson-title">Today's Tips · 핵심 표현</div>
-          <div class="lesson-meta">perfect storm, by far 등 · <span id="count-tips">—</span>문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      </div>
-      <div class="lesson-item" onclick="startQuiz('movie')">
-        <div class="lesson-icon pink">🎬</div>
-        <div class="lesson-info">
-          <div class="lesson-title">The Intern · 영화 대화</div>
-          <div class="lesson-meta">실생활 표현 · <span id="count-movie">—</span>문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      
-      <div class="lesson-item" onclick="startUploadedQuiz(21, 34, '2026. 8. 12 복습')">
-        <div class="lesson-icon purple">📡</div>
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 8. 12 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      </div>
-    
-      <div class="lesson-item" onclick="startUploadedQuiz(35, 44, '2026. 8. 5 복습')">
-        <div class="lesson-icon purple">📡</div>
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 8. 5 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 10문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      </div>
-    
-      <div class="lesson-item" onclick="startUploadedQuiz(45, 58, '2026. 7. 22 복습')">
-        <div class="lesson-icon purple">📡</div>
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 7. 22 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
-        </div>
-        <div class="lesson-arrow">›</div>
-      </div>
-    
+      <!-- UPLOADED LESSONS START -->
       <div class="lesson-item" onclick="startLesson('lesson_59')">
         <div class="lesson-icon purple">📡</div>
         <div class="lesson-info">
@@ -686,7 +628,43 @@
         </div>
         <div class="lesson-arrow">›</div>
       </div>
-    </div>
+
+      <div class="lesson-item" onclick="startUploadedQuiz(45, 58, '2026. 7. 22 복습')">
+        <div class="lesson-icon purple">📡</div>
+        <div class="lesson-info">
+          <div class="lesson-title">2026. 7. 22 복습</div>
+          <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
+        </div>
+        <div class="lesson-arrow">›</div>
+      </div>
+
+      <div class="lesson-item" onclick="startUploadedQuiz(35, 44, '2026. 8. 5 복습')">
+        <div class="lesson-icon purple">📡</div>
+        <div class="lesson-info">
+          <div class="lesson-title">2026. 8. 5 복습</div>
+          <div class="lesson-meta">빈칸 퀴즈 · 10문제</div>
+        </div>
+        <div class="lesson-arrow">›</div>
+      </div>
+
+      <div class="lesson-item" onclick="startUploadedQuiz(21, 34, '2026. 8. 12 복습')">
+        <div class="lesson-icon purple">📡</div>
+        <div class="lesson-info">
+          <div class="lesson-title">2026. 8. 12 복습</div>
+          <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
+        </div>
+        <div class="lesson-arrow">›</div>
+      </div>
+
+      <div class="lesson-item" onclick="startUploadedQuiz(1, 20, '2026. 7. 8 전체 복습')">
+        <div class="lesson-icon purple">🌍</div>
+        <div class="lesson-info">
+          <div class="lesson-title">2026. 7. 8 전체 복습</div>
+          <div class="lesson-meta">빈칸 퀴즈 · 20문제</div>
+        </div>
+        <div class="lesson-arrow">›</div>
+      </div>
+      <!-- UPLOADED LESSONS END -->
     </div>
   </div>
 
@@ -1378,14 +1356,6 @@ function speak(text) {
 ============================================================ */
 function initHome() {
   const all   = QUIZ_DATA.filter(q => !q.is_vocab);
-  const news  = all.filter(q => q.section === 'news');
-  const tips  = all.filter(q => q.section === 'tips');
-  const movie = all.filter(q => q.section === 'movie');
-
-  $('count-all').textContent   = all.length;
-  $('count-news').textContent  = news.length;
-  $('count-tips').textContent  = tips.length;
-  $('count-movie').textContent = movie.length;
   $('stat-total').textContent  = all.length;
   $('stat-done').textContent   = totalStats.done;
   $('stat-acc').textContent    = totalStats.total
