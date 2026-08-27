@@ -653,12 +653,11 @@
       <h3>📰 학습 세트 선택</h3>
       <div id="ai-generated-lessons"></div>
       <!-- UPLOADED LESSONS START -->
-      <div class="lesson-item" data-removable-key="uploaded_1_20" onclick="startUploadedQuiz(1, 20, '2026. 7. 8 전체 복습')">
+      <div class="lesson-item" data-removable-key="uploaded_1_20" data-lesson-title="2026. 7. 8 전체 복습" onclick="startUploadedQuiz(1, 20, '2026. 7. 8 전체 복습')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 7. 8 전체 복습</div>
           <div class="lesson-meta">빈칸 퀴즈 · 20문제</div>
         </div>
-        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_1_20', '2026. 7. 8 전체 복습')" aria-label="2026. 7. 8 전체 복습 삭제">×</button>
         <div class="lesson-arrow">›</div>
       </div>
       <!-- UPLOADED LESSONS END -->
@@ -1442,6 +1441,17 @@ function configureLocalMaterialInput() {
   if (panel && isLocalGeminiApp()) {
     document.body.classList.add('local-mode');
     panel.hidden = false;
+    document.querySelectorAll('[data-removable-key]').forEach(row => {
+      if (row.querySelector('.lesson-delete')) return;
+      const deleteButton = document.createElement('button');
+      const lessonTitle = row.dataset.lessonTitle || '학습 세트';
+      deleteButton.type = 'button';
+      deleteButton.className = 'lesson-delete';
+      deleteButton.textContent = '×';
+      deleteButton.setAttribute('aria-label', `${lessonTitle} 삭제`);
+      deleteButton.onclick = event => deleteBuiltInLesson(event, row.dataset.removableKey, lessonTitle);
+      row.insertBefore(deleteButton, row.querySelector('.lesson-arrow'));
+    });
   }
 }
 
@@ -1653,16 +1663,20 @@ function renderAiLessons() {
     const arrow = document.createElement('div');
     arrow.className = 'lesson-arrow';
     arrow.textContent = '›';
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
-    deleteButton.className = 'lesson-delete';
-    deleteButton.textContent = '×';
-    deleteButton.setAttribute('aria-label', `${cleanLessonTitle(lesson.source || lesson.title)} 삭제`);
-    deleteButton.onclick = event => {
-      event.stopPropagation();
-      deleteAiLesson(lesson.key, cleanLessonTitle(lesson.source || lesson.title));
-    };
-    row.append(info, deleteButton, arrow);
+    row.append(info);
+    if (isLocalGeminiApp()) {
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'lesson-delete';
+      deleteButton.textContent = '×';
+      deleteButton.setAttribute('aria-label', `${cleanLessonTitle(lesson.source || lesson.title)} 삭제`);
+      deleteButton.onclick = event => {
+        event.stopPropagation();
+        deleteAiLesson(lesson.key, cleanLessonTitle(lesson.source || lesson.title));
+      };
+      row.append(deleteButton);
+    }
+    row.append(arrow);
     container.appendChild(row);
   });
 }
@@ -1758,7 +1772,7 @@ function renderQuestion() {
       <button class="tts-btn" id="tts-btn" onclick="playTTS(this)">
         🔊 듣기
       </button>
-      ${q.hint ? `<button class="tts-btn hint-btn" onclick="showHint(currentQuiz[currentIndex])">💡 힌트</button>` : ''}
+      ${q.targets?.length ? `<button class="tts-btn hint-btn" onclick="showHint(currentQuiz[currentIndex])">💡 힌트</button>` : ''}
     </div>
     <div id="hint-area"></div>
     ${q.vocab_tip ? `<div class="vocab-card" style="display:none" id="vocab-reveal">
@@ -1899,27 +1913,6 @@ function checkAnswer() {
     // Wrong
     score.wrong++;
     wrongAttempts++;
-    if (wrongAttempts >= 2) {
-      answered = true;
-      if (blank) {
-        blank.textContent = target.answer;
-        blank.classList.remove('typing', 'wrong');
-        blank.style.color = 'var(--orange)';
-        blank.style.borderBottomColor = 'var(--orange)';
-      }
-      $('answer-input').value = target.answer;
-      $('answer-input').disabled = true;
-      $('answer-input').classList.add('wrong-input');
-      $('btn-next').classList.remove('hidden');
-      $('btn-skip').classList.add('hidden');
-      $('btn-check').classList.add('hidden');
-      showHint(q);
-      const vocabReveal = document.getElementById('vocab-reveal');
-      if (vocabReveal) vocabReveal.style.display = 'block';
-      const text = q.en_sentence.replace(/\{[^}]+\}/g, q.targets.map(t => t.answer).join(' '));
-      setTimeout(() => speak(text), 300);
-      return;
-    }
     if (blank) {
       blank.textContent = userInput || '✗';
       blank.classList.remove('typing', 'correct');
@@ -1933,7 +1926,8 @@ function checkAnswer() {
     $('answer-input').classList.add('wrong-input');
     setTimeout(() => $('answer-input').classList.remove('wrong-input'), 500);
     $('answer-input').value = '';
-    showHint(q);
+    const hintPercentages = [20, 60, 100];
+    showHint(q, hintPercentages[Math.min(wrongAttempts - 1, hintPercentages.length - 1)]);
   }
 }
 
@@ -1942,13 +1936,28 @@ function shakeInput() {
   setTimeout(() => $('answer-input').style.animation = '', 400);
 }
 
-function showHint(q) {
+function showHint(q, percentage = 20) {
   const hintArea = $('hint-area');
-  if (!q.hint) return;
+  const answer = String(q.targets?.[0]?.answer || '');
+  if (!answer) return;
+  const normalizedPercentage = Math.max(20, Math.min(100, percentage));
+  const visibleCharacters = Math.max(
+    1,
+    Math.floor(answer.replace(/\s/g, '').length * normalizedPercentage / 100)
+  );
+  let shown = 0;
+  const partialAnswer = [...answer].map(character => {
+    if (/\s/.test(character)) return ' ';
+    if (shown < visibleCharacters) {
+      shown++;
+      return character;
+    }
+    return '_';
+  }).join(' ');
   hintArea.innerHTML = `
     <div class="hint-card">
       <div class="hint-icon">💬</div>
-      <div class="hint-text">${q.hint}</div>
+      <div class="hint-text">정답 앞부분 ${normalizedPercentage}%: ${partialAnswer}</div>
     </div>
   `;
 }
