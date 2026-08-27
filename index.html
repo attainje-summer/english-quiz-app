@@ -33,6 +33,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
 
     body {
       font-family: 'Noto Sans KR', 'Inter', sans-serif;
@@ -693,7 +694,7 @@
       <!-- UPLOADED LESSONS END -->
     </div>
 
-    <div class="home-card ai-card">
+    <div class="home-card ai-card" id="local-material-input" hidden>
       <h3><span>📥 자료입력/파일넣기</span><span class="ai-badge" id="ai-server-badge">로컬 서버 확인 중</span></h3>
       <div class="ai-help">HWP/HWPX 파일을 선택하면 로컬 설정에 저장된 요청 내용에 따라 영어 학습 자료로 정리합니다.</div>
       <div class="ai-field">
@@ -1473,6 +1474,15 @@ async function checkAiServer() {
   }
 }
 
+function isLocalGeminiApp() {
+  return ['127.0.0.1', 'localhost', '::1'].includes(window.location.hostname);
+}
+
+function configureLocalMaterialInput() {
+  const panel = $('local-material-input');
+  if (panel && isLocalGeminiApp()) panel.hidden = false;
+}
+
 function updateAiFileName() {
   const file = $('ai-file').files[0];
   $('ai-file-name').textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)}MB` : '선택된 파일 없음';
@@ -2049,11 +2059,12 @@ function restartCurrent() {
    INIT
 ============================================================ */
 async function initializeApp() {
+  configureLocalMaterialInput();
   applyHiddenBuiltInLessons();
   await loadPublishedAiLessons();
   loadAiLessons();
   initHome();
-  checkAiServer();
+  if (isLocalGeminiApp()) checkAiServer();
 }
 initializeApp();
 </script>
