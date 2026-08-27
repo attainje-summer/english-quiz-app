@@ -143,20 +143,6 @@
     .lesson-item:last-child { border-bottom: none; }
     .lesson-item:active { opacity: 0.7; }
 
-    .lesson-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .lesson-icon.purple { background: rgba(124,107,255,0.2); }
-    .lesson-icon.pink   { background: rgba(255,107,157,0.2); }
-    .lesson-icon.green  { background: rgba(34,214,122,0.2); }
-
     .lesson-info { flex: 1; }
     .lesson-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
     .lesson-meta  { font-size: 12px; color: var(--text2); }
@@ -164,6 +150,20 @@
     .lesson-arrow {
       color: var(--text3);
       font-size: 18px;
+    }
+    .lesson-delete {
+      border: 1px solid rgba(255, 107, 157, 0.45);
+      background: rgba(255, 107, 157, 0.1);
+      color: var(--pink);
+      border-radius: 4px;
+      width: 15px;
+      height: 15px;
+      padding: 0;
+      font: inherit;
+      font-size: 10px;
+      line-height: 1;
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
     .home-stats {
@@ -584,6 +584,31 @@
       font-family: 'Noto Sans KR', sans-serif;
     }
 
+    /* ===== GEMINI DOCUMENT ASSISTANT ===== */
+    .ai-card { margin-top: 16px; }
+    .ai-card h3 { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .ai-badge { font-size:11px; color:var(--green); background:rgba(34,214,122,.12); border:1px solid rgba(34,214,122,.35); border-radius:99px; padding:4px 8px; }
+    .ai-help { color:var(--text2); font-size:12px; line-height:1.55; margin-bottom:12px; }
+    .ai-field { margin-top:10px; }
+    .ai-field label { display:block; color:var(--text2); font-size:12px; margin-bottom:6px; }
+    .ai-input, .ai-textarea, .ai-select {
+      width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:var(--radius-sm);
+      background:var(--surface2); color:var(--text); padding:12px; font:inherit; outline:none;
+    }
+    .ai-input:focus, .ai-textarea:focus, .ai-select:focus { border-color:var(--primary); }
+    .ai-textarea { min-height:90px; resize:vertical; }
+    .ai-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .ai-file { display:flex; align-items:center; gap:10px; }
+    .ai-file-name { color:var(--text2); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .ai-btn { width:100%; margin-top:12px; padding:13px; border:0; border-radius:var(--radius-sm); background:linear-gradient(135deg,var(--primary),var(--accent)); color:white; font:inherit; font-weight:700; cursor:pointer; }
+    .ai-btn:disabled { opacity:.55; cursor:wait; }
+    .ai-status { min-height:20px; margin-top:10px; color:var(--text2); font-size:12px; }
+    .ai-status.error { color:var(--red); }
+    .ai-result { display:none; margin-top:12px; padding:14px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text); font-size:14px; line-height:1.65; white-space:pre-wrap; max-height:420px; overflow:auto; }
+    .ai-actions { display:none; margin-top:8px; justify-content:flex-end; }
+    .ai-copy { border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--text2); padding:7px 10px; cursor:pointer; }
+    @media (max-width:520px) { .ai-row { grid-template-columns:1fr; } }
+
     /* ===== UTILS ===== */
     .hidden { display: none !important; }
 
@@ -619,52 +644,67 @@
 
     <div class="home-card">
       <h3>📰 학습 세트 선택</h3>
+      <div id="ai-generated-lessons"></div>
       <!-- UPLOADED LESSONS START -->
-      <div class="lesson-item" onclick="startLesson('lesson_59')">
-        <div class="lesson-icon purple">📡</div>
+      <div class="lesson-item" data-removable-key="lesson_59" onclick="startLesson('lesson_59')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 7. 29 복습</div>
           <div class="lesson-meta">빈칸 퀴즈 · 10문제</div>
         </div>
+        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'lesson_59', '2026. 7. 29 복습')" aria-label="2026. 7. 29 복습 삭제">×</button>
         <div class="lesson-arrow">›</div>
       </div>
 
-      <div class="lesson-item" onclick="startUploadedQuiz(45, 58, '2026. 7. 22 복습')">
-        <div class="lesson-icon purple">📡</div>
+      <div class="lesson-item" data-removable-key="uploaded_45_58" onclick="startUploadedQuiz(45, 58, '2026. 7. 22 복습')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 7. 22 복습</div>
           <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
         </div>
+        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_45_58', '2026. 7. 22 복습')" aria-label="2026. 7. 22 복습 삭제">×</button>
         <div class="lesson-arrow">›</div>
       </div>
 
-      <div class="lesson-item" onclick="startUploadedQuiz(35, 44, '2026. 8. 5 복습')">
-        <div class="lesson-icon purple">📡</div>
+      <div class="lesson-item" data-removable-key="uploaded_35_44" onclick="startUploadedQuiz(35, 44, '2026. 8. 5 복습')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 8. 5 복습</div>
           <div class="lesson-meta">빈칸 퀴즈 · 10문제</div>
         </div>
+        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_35_44', '2026. 8. 5 복습')" aria-label="2026. 8. 5 복습 삭제">×</button>
         <div class="lesson-arrow">›</div>
       </div>
 
-      <div class="lesson-item" onclick="startUploadedQuiz(21, 34, '2026. 8. 12 복습')">
-        <div class="lesson-icon purple">📡</div>
+      <div class="lesson-item" data-removable-key="uploaded_21_34" onclick="startUploadedQuiz(21, 34, '2026. 8. 12 복습')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 8. 12 복습</div>
           <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
         </div>
+        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_21_34', '2026. 8. 12 복습')" aria-label="2026. 8. 12 복습 삭제">×</button>
         <div class="lesson-arrow">›</div>
       </div>
 
-      <div class="lesson-item" onclick="startUploadedQuiz(1, 20, '2026. 7. 8 전체 복습')">
-        <div class="lesson-icon purple">🌍</div>
+      <div class="lesson-item" data-removable-key="uploaded_1_20" onclick="startUploadedQuiz(1, 20, '2026. 7. 8 전체 복습')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 7. 8 전체 복습</div>
           <div class="lesson-meta">빈칸 퀴즈 · 20문제</div>
         </div>
+        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_1_20', '2026. 7. 8 전체 복습')" aria-label="2026. 7. 8 전체 복습 삭제">×</button>
         <div class="lesson-arrow">›</div>
       </div>
       <!-- UPLOADED LESSONS END -->
+    </div>
+
+    <div class="home-card ai-card">
+      <h3><span>📥 자료입력/파일넣기</span><span class="ai-badge" id="ai-server-badge">로컬 서버 확인 중</span></h3>
+      <div class="ai-help">HWP/HWPX 파일을 선택하면 로컬 설정에 저장된 요청 내용에 따라 영어 학습 자료로 정리합니다.</div>
+      <div class="ai-field">
+        <label for="ai-file">문서 파일</label>
+        <div class="ai-file">
+          <input id="ai-file" type="file" accept=".hwp,.hwpx,.txt,.md" onchange="updateAiFileName()" />
+        </div>
+        <div class="ai-file-name" id="ai-file-name">선택된 파일 없음</div>
+      </div>
+      <button class="ai-btn" id="ai-submit" onclick="summarizeWithGemini()">자료 정리하기</button>
+      <div class="ai-status" id="ai-status"></div>
     </div>
   </div>
 
@@ -907,19 +947,10 @@ const QUIZ_DATA = [
   {
     id: 20, section: 'news',
     kr_meaning: "유럽에서 지난해 총기 폭력보다 더 많은 사망자를 낸 것은 바로 열기였다.",
-    en_sentence: "Last year, heat was more deadly in Europe than gun violence was in the United States.",
-    targets: [],
-    is_vocab: true,
-    vocab_word: 'deadly',
-    vocab_pos: 'adjective',
-    vocab_def_en: 'causing or able to cause death; extremely dangerous',
-    vocab_def_ko: '치명적인, 목숨을 앗아갈 정도로 위험한',
-    vocab_examples: [
-      'a deadly disease',
-      'a deadly weapon',
-      'Heat was more deadly than gun violence.'
-    ],
-    hint: null
+    en_sentence: "Last year, heat was more {deadly} in Europe than gun violence was in the United States.",
+    targets: [{ key: 'deadly', answer: 'deadly' }],
+    hint: "dea___",
+    vocab_tip: "deadly = 치명적인, 목숨을 앗아갈 정도로 위험한"
   },
 
   /* ── 2026. 8. 12 복습 ── */
@@ -1312,6 +1343,80 @@ const QUIZ_DATA = [
     targets: [{ key: 'passion', answer: "passion" }],
     hint: "pa",
     vocab_tip: null
+  },
+
+  /* ── 2026. 7. 29 복습 ── */
+  {
+    id: 69, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "하지만 자신의 마음속에선 난 다른 일을 할 운명이야 라는 걸 안다면",
+    en_sentence: "Finally tonight, what do you do when everyone around you thinks you're perfect for one thing, but in your heart you know you're {meant_for} something else? Here's Steve Hartman On the Road.",
+    targets: [{ key: 'meant_for', answer: "meant for" }],
+    hint: "me___ fo_",
+    vocab_tip: null
+  },
+  {
+    id: 70, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "Jordan은 항상 대부분 마음속에만 간직한 채 남들한테는 털어 놓지 못한 고결한 목표들이 있었죠.",
+    en_sentence: "As we first reported last year, 7-foot-3 Jordan Wilmore has always had {lofty} goals that he kept mostly to himself.",
+    targets: [{ key: 'lofty', answer: "lofty" }],
+    hint: "lo___",
+    vocab_tip: null
+  },
+  {
+    id: 71, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "그가 처음 문틀에 머리를 부딪친 이후로,",
+    en_sentence: "Ever since he first hit his head on a {door_jamb},",
+    targets: [{ key: 'door_jamb', answer: "door jamb" }],
+    hint: "do__ ja__",
+    vocab_tip: null
+  },
+  {
+    id: 72, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "하지만 남들이 누군가의 꿈을 두고 이래라 저래라 할 수는 없는 거죠.",
+    en_sentence: "people have been telling Jordan he should play professional basketball. But other people can't {dictate} your dreams.",
+    targets: [{ key: 'dictate', answer: "dictate" }],
+    hint: "dic____",
+    vocab_tip: null
+  },
+  {
+    id: 73, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "신입 경찰",
+    en_sentence: "Which is how Jordan became America's tallest police {recruit}.",
+    targets: [{ key: 'recruit', answer: "recruit" }],
+    hint: "rec____",
+    vocab_tip: null
+  },
+  {
+    id: 74, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "머리를 뒤로 젖히세요.",
+    en_sentence: "Okay, just relax. Close your eyes. {put_your_head_back}.",
+    targets: [{ key: 'put_your_head_back', answer: "Put your head back" }],
+    hint: "Pu_ yo__ he__ ba__",
+    vocab_tip: null
+  },
+  {
+    id: 75, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "항상 모든 걸 다 쏟아 부어서 일하죠.",
+    en_sentence: "Yeah, I mean, she works {on_all_cylinders} all the time.",
+    targets: [{ key: 'on_all_cylinders', answer: "on all cylinders" }],
+    hint: "o_ al_ cyli_____",
+    vocab_tip: null
+  },
+  {
+    id: 76, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "이 임대차 계약서는 좀 별로인거 같은데.",
+    en_sentence: "I don't know, kid. This lease doesn't look so {hot} to me.",
+    targets: [{ key: 'hot', answer: "hot" }],
+    hint: "ho_",
+    vocab_tip: null
+  },
+  {
+    id: 77, section: 'news', lesson_key: 'lesson_69',
+    kr_meaning: "그리고 농구를 아주 좋아하지도 않았습니다.",
+    en_sentence: "And basketball was never his {passion}.",
+    targets: [{ key: 'passion', answer: "passion" }],
+    hint: "pa",
+    vocab_tip: null
   }
 ];
 
@@ -1349,6 +1454,245 @@ function speak(text) {
   utt.lang = 'en-US';
   utt.rate = 0.9;
   window.speechSynthesis.speak(utt);
+}
+
+/* ============================================================
+   GEMINI DOCUMENT ASSISTANT
+============================================================ */
+async function checkAiServer() {
+  const badge = $('ai-server-badge');
+  try {
+    const response = await fetch('/api/health', { cache: 'no-store' });
+    if (!response.ok) throw new Error();
+    const info = await response.json();
+    badge.textContent = `연결됨 · ${info.model}`;
+    badge.style.color = 'var(--green)';
+  } catch (_) {
+    badge.textContent = '로컬 서버 필요';
+    badge.style.color = 'var(--orange)';
+  }
+}
+
+function updateAiFileName() {
+  const file = $('ai-file').files[0];
+  $('ai-file-name').textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)}MB` : '선택된 파일 없음';
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function summarizeWithGemini() {
+  const file = $('ai-file').files[0];
+  const status = $('ai-status');
+  const button = $('ai-submit');
+  if (!file) { status.className = 'ai-status error'; status.textContent = '먼저 HWP 또는 HWPX 파일을 선택해 주세요.'; return; }
+  if (file.size > 30 * 1024 * 1024) { status.className = 'ai-status error'; status.textContent = '파일은 30MB 이하여야 합니다.'; return; }
+  button.disabled = true;
+  button.textContent = '문서를 읽고 Gemini가 정리하는 중…';
+  status.className = 'ai-status';
+  status.textContent = '파일 크기에 따라 최대 1~2분 정도 걸릴 수 있습니다.';
+  try {
+    const fileBase64 = await fileToBase64(file);
+    const response = await fetch('/api/summarize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, fileBase64 })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || '문서 정리에 실패했습니다.');
+    const lessonKey = saveAiQuiz(data.quizTitle, data.quizItems, file.name, data.lessonKey);
+    status.textContent = `완료 · ${data.quizItems.length}문제 생성 · 퀴즈를 시작합니다.`;
+    startLesson(lessonKey);
+  } catch (error) {
+    status.className = 'ai-status error';
+    status.textContent = error.message.includes('fetch') ? '로컬 서버에 연결할 수 없습니다. start_gemini_app.bat을 먼저 실행해 주세요.' : error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = '자료 정리하기';
+  }
+}
+
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildAiQuizItem(raw, lessonKey, id) {
+  const answer = String(raw.answer || '').trim();
+  const key = answer.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `answer_${id}`;
+  const sentence = String(raw.english || '').replace(new RegExp(escapeRegExp(answer), 'i'), `{${key}}`);
+  return {
+    id,
+    section: 'ai',
+    lesson_key: lessonKey,
+    kr_meaning: String(raw.korean || ''),
+    en_sentence: sentence,
+    targets: [{ key, answer }],
+    hint: String(raw.hint || '') || null,
+    vocab_tip: null
+  };
+}
+
+function getSavedAiLessons() {
+  try { return JSON.parse(localStorage.getItem('edu_ai_lessons') || '[]'); }
+  catch (_) { return []; }
+}
+
+function cleanLessonTitle(value) {
+  const cleaned = String(value || '')
+    .replace(/\.(hwp|hwpx|txt|md)$/i, '')
+    .replace(/자료/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned || '학습 세트';
+}
+
+function getHiddenBuiltInLessons() {
+  try { return JSON.parse(localStorage.getItem('edu_hidden_lessons') || '[]'); }
+  catch (_) { return []; }
+}
+
+function applyHiddenBuiltInLessons() {
+  const hidden = new Set(getHiddenBuiltInLessons());
+  document.querySelectorAll('[data-removable-key]').forEach(row => {
+    row.style.display = hidden.has(row.dataset.removableKey) ? 'none' : '';
+  });
+}
+
+function deleteBuiltInLesson(event, lessonKey, lessonTitle) {
+  event.stopPropagation();
+  if (!confirm(`"${lessonTitle}" 학습세트를 삭제할까요?`)) return;
+  const hidden = new Set(getHiddenBuiltInLessons());
+  hidden.add(lessonKey);
+  localStorage.setItem('edu_hidden_lessons', JSON.stringify([...hidden]));
+  applyHiddenBuiltInLessons();
+}
+
+let publishedAiLessons = [];
+
+async function loadPublishedAiLessons() {
+  try {
+    const response = await fetch(`generated_lessons.json?v=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) return;
+    const rawLessons = await response.json();
+    if (!Array.isArray(rawLessons)) return;
+    let nextId = Math.max(0, ...QUIZ_DATA.map(q => Number(q.id) || 0)) + 1;
+    publishedAiLessons = rawLessons.map(rawLesson => {
+      const key = String(rawLesson.key || `published_${nextId}`);
+      const items = Array.isArray(rawLesson.items)
+        ? rawLesson.items.map(raw => buildAiQuizItem(raw, key, nextId++))
+        : [];
+      return {
+        key,
+        title: String(rawLesson.title || 'AI 생성 학습 자료'),
+        source: String(rawLesson.source || ''),
+        createdAt: rawLesson.createdAt,
+        items
+      };
+    }).filter(lesson => lesson.items.length);
+    publishedAiLessons.forEach(lesson => {
+      if (!QUIZ_DATA.some(q => q.lesson_key === lesson.key)) QUIZ_DATA.push(...lesson.items);
+    });
+  } catch (_) {
+    publishedAiLessons = [];
+  }
+}
+
+function loadAiLessons() {
+  getSavedAiLessons().forEach(lesson => {
+    if (!QUIZ_DATA.some(q => q.lesson_key === lesson.key)) QUIZ_DATA.push(...lesson.items);
+  });
+  renderAiLessons();
+}
+
+function saveAiQuiz(title, rawItems, sourceName, providedKey) {
+  const lessons = getSavedAiLessons();
+  const lessonKey = providedKey || `ai_${Date.now()}`;
+  let nextId = Math.max(0, ...QUIZ_DATA.map(q => Number(q.id) || 0)) + 1;
+  const items = rawItems.map(raw => buildAiQuizItem(raw, lessonKey, nextId++));
+  const lesson = {
+    key: lessonKey,
+    title: cleanLessonTitle(title || sourceName),
+    source: sourceName,
+    createdAt: new Date().toISOString(),
+    items
+  };
+  lessons.unshift(lesson);
+  localStorage.setItem('edu_ai_lessons', JSON.stringify(lessons.slice(0, 20)));
+  QUIZ_DATA.push(...items);
+  renderAiLessons();
+  initHome();
+  return lessonKey;
+}
+
+async function deleteAiLesson(lessonKey, lessonTitle) {
+  if (!confirm(`"${lessonTitle}" 학습세트를 삭제할까요?`)) return;
+  const isPublished = publishedAiLessons.some(lesson => lesson.key === lessonKey);
+  if (isPublished) {
+    try {
+      const response = await fetch('/api/delete-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonKey })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || '학습세트를 삭제하지 못했습니다.');
+    } catch (error) {
+      alert(error.message.includes('fetch')
+        ? '학습세트를 삭제하려면 로컬 생성 서버를 먼저 실행해 주세요.'
+        : error.message);
+      return;
+    }
+  }
+  const saved = getSavedAiLessons().filter(lesson => lesson.key !== lessonKey);
+  localStorage.setItem('edu_ai_lessons', JSON.stringify(saved));
+  publishedAiLessons = publishedAiLessons.filter(lesson => lesson.key !== lessonKey);
+  for (let index = QUIZ_DATA.length - 1; index >= 0; index--) {
+    if (QUIZ_DATA[index].lesson_key === lessonKey) QUIZ_DATA.splice(index, 1);
+  }
+  renderAiLessons();
+  initHome();
+}
+
+function renderAiLessons() {
+  const container = $('ai-generated-lessons');
+  if (!container) return;
+  container.innerHTML = '';
+  const merged = [...publishedAiLessons, ...getSavedAiLessons()]
+    .filter((lesson, index, all) => all.findIndex(item => item.key === lesson.key) === index);
+  merged.forEach(lesson => {
+    const row = document.createElement('div');
+    row.className = 'lesson-item';
+    row.onclick = () => startLesson(lesson.key);
+    const info = document.createElement('div');
+    info.className = 'lesson-info';
+    const title = document.createElement('div');
+    title.className = 'lesson-title';
+    title.textContent = cleanLessonTitle(lesson.source || lesson.title);
+    const meta = document.createElement('div');
+    meta.className = 'lesson-meta';
+    meta.textContent = `AI 생성 퀴즈 · ${lesson.items.length}문제`;
+    info.append(title, meta);
+    const arrow = document.createElement('div');
+    arrow.className = 'lesson-arrow';
+    arrow.textContent = '›';
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'lesson-delete';
+    deleteButton.textContent = '×';
+    deleteButton.setAttribute('aria-label', `${cleanLessonTitle(lesson.source || lesson.title)} 삭제`);
+    deleteButton.onclick = event => {
+      event.stopPropagation();
+      deleteAiLesson(lesson.key, cleanLessonTitle(lesson.source || lesson.title));
+    };
+    row.append(info, deleteButton, arrow);
+    container.appendChild(row);
+  });
 }
 
 /* ============================================================
@@ -1487,7 +1831,7 @@ function renderVocabCard(q, content) {
 }
 
 function sectionLabel(section) {
-  return { news: '📡 CNN 뉴스', tips: '💡 Today\'s Tips', movie: '🎬 The Intern' }[section] || section;
+  return { news: '📡 CNN 뉴스', tips: '💡 Today\'s Tips', movie: '🎬 The Intern', ai: '✨ AI 생성 자료' }[section] || section;
 }
 
 function getTargetWord(q) {
@@ -1704,7 +2048,14 @@ function restartCurrent() {
 /* ============================================================
    INIT
 ============================================================ */
-initHome();
+async function initializeApp() {
+  applyHiddenBuiltInLessons();
+  await loadPublishedAiLessons();
+  loadAiLessons();
+  initHome();
+  checkAiServer();
+}
+initializeApp();
 </script>
 </body>
 </html>
