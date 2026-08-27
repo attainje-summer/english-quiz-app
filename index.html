@@ -153,6 +153,7 @@
       font-size: 18px;
     }
     .lesson-delete {
+      display: none;
       border: 1px solid rgba(255, 107, 157, 0.45);
       background: rgba(255, 107, 157, 0.1);
       color: var(--pink);
@@ -165,6 +166,11 @@
       line-height: 1;
       cursor: pointer;
       flex-shrink: 0;
+    }
+    body.local-mode .lesson-delete {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .home-stats {
@@ -647,42 +653,6 @@
       <h3>📰 학습 세트 선택</h3>
       <div id="ai-generated-lessons"></div>
       <!-- UPLOADED LESSONS START -->
-      <div class="lesson-item" data-removable-key="lesson_59" onclick="startLesson('lesson_59')">
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 7. 29 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 10문제</div>
-        </div>
-        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'lesson_59', '2026. 7. 29 복습')" aria-label="2026. 7. 29 복습 삭제">×</button>
-        <div class="lesson-arrow">›</div>
-      </div>
-
-      <div class="lesson-item" data-removable-key="uploaded_45_58" onclick="startUploadedQuiz(45, 58, '2026. 7. 22 복습')">
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 7. 22 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
-        </div>
-        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_45_58', '2026. 7. 22 복습')" aria-label="2026. 7. 22 복습 삭제">×</button>
-        <div class="lesson-arrow">›</div>
-      </div>
-
-      <div class="lesson-item" data-removable-key="uploaded_35_44" onclick="startUploadedQuiz(35, 44, '2026. 8. 5 복습')">
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 8. 5 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 10문제</div>
-        </div>
-        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_35_44', '2026. 8. 5 복습')" aria-label="2026. 8. 5 복습 삭제">×</button>
-        <div class="lesson-arrow">›</div>
-      </div>
-
-      <div class="lesson-item" data-removable-key="uploaded_21_34" onclick="startUploadedQuiz(21, 34, '2026. 8. 12 복습')">
-        <div class="lesson-info">
-          <div class="lesson-title">2026. 8. 12 복습</div>
-          <div class="lesson-meta">빈칸 퀴즈 · 14문제</div>
-        </div>
-        <button type="button" class="lesson-delete" onclick="deleteBuiltInLesson(event, 'uploaded_21_34', '2026. 8. 12 복습')" aria-label="2026. 8. 12 복습 삭제">×</button>
-        <div class="lesson-arrow">›</div>
-      </div>
-
       <div class="lesson-item" data-removable-key="uploaded_1_20" onclick="startUploadedQuiz(1, 20, '2026. 7. 8 전체 복습')">
         <div class="lesson-info">
           <div class="lesson-title">2026. 7. 8 전체 복습</div>
@@ -1416,6 +1386,7 @@ let currentQuiz = [];
 let currentIndex = 0;
 let score = { correct: 0, wrong: 0, skipped: 0 };
 let answered = false;
+let wrongAttempts = 0;
 let currentSetKey = 'all';
 let totalStats = JSON.parse(localStorage.getItem('edu_stats') || '{"done":0,"correct":0,"total":0}');
 
@@ -1468,7 +1439,10 @@ function isLocalGeminiApp() {
 
 function configureLocalMaterialInput() {
   const panel = $('local-material-input');
-  if (panel && isLocalGeminiApp()) panel.hidden = false;
+  if (panel && isLocalGeminiApp()) {
+    document.body.classList.add('local-mode');
+    panel.hidden = false;
+  }
 }
 
 function updateAiFileName() {
@@ -1747,6 +1721,7 @@ function beginQuiz() {
 ============================================================ */
 function renderQuestion() {
   answered = false;
+  wrongAttempts = 0;
   const q = currentQuiz[currentIndex];
   const total = currentQuiz.length;
 
@@ -1923,6 +1898,28 @@ function checkAnswer() {
   } else {
     // Wrong
     score.wrong++;
+    wrongAttempts++;
+    if (wrongAttempts >= 2) {
+      answered = true;
+      if (blank) {
+        blank.textContent = target.answer;
+        blank.classList.remove('typing', 'wrong');
+        blank.style.color = 'var(--orange)';
+        blank.style.borderBottomColor = 'var(--orange)';
+      }
+      $('answer-input').value = target.answer;
+      $('answer-input').disabled = true;
+      $('answer-input').classList.add('wrong-input');
+      $('btn-next').classList.remove('hidden');
+      $('btn-skip').classList.add('hidden');
+      $('btn-check').classList.add('hidden');
+      showHint(q);
+      const vocabReveal = document.getElementById('vocab-reveal');
+      if (vocabReveal) vocabReveal.style.display = 'block';
+      const text = q.en_sentence.replace(/\{[^}]+\}/g, q.targets.map(t => t.answer).join(' '));
+      setTimeout(() => speak(text), 300);
+      return;
+    }
     if (blank) {
       blank.textContent = userInput || '✗';
       blank.classList.remove('typing', 'correct');
