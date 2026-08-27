@@ -694,19 +694,7 @@
       <!-- UPLOADED LESSONS END -->
     </div>
 
-    <div class="home-card ai-card" id="local-material-input" hidden>
-      <h3><span>📥 자료입력/파일넣기</span><span class="ai-badge" id="ai-server-badge">로컬 서버 확인 중</span></h3>
-      <div class="ai-help">HWP/HWPX 파일을 선택하면 로컬 설정에 저장된 요청 내용에 따라 영어 학습 자료로 정리합니다.</div>
-      <div class="ai-field">
-        <label for="ai-file">문서 파일</label>
-        <div class="ai-file">
-          <input id="ai-file" type="file" accept=".hwp,.hwpx,.txt,.md" onchange="updateAiFileName()" />
-        </div>
-        <div class="ai-file-name" id="ai-file-name">선택된 파일 없음</div>
-      </div>
-      <button class="ai-btn" id="ai-submit" onclick="summarizeWithGemini()">자료 정리하기</button>
-      <div class="ai-status" id="ai-status"></div>
-    </div>
+    <!-- LOCAL_MATERIAL_INPUT -->
   </div>
 
 
