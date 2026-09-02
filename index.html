@@ -374,7 +374,8 @@
     .helper-buttons {
       display: flex;
       gap: 8px;
-      align-self: flex-start;
+      align-self: stretch;
+      width: 100%;
     }
     .tts-btn {
       display: flex;
@@ -396,6 +397,13 @@
     .tts-btn.playing { color: var(--primary2); border-color: var(--primary); }
     .hint-btn { color: var(--orange); border-color: rgba(255,140,66,0.45); }
     .hint-btn:active { background: rgba(255,140,66,0.12); }
+    .helper-buttons .btn-skip {
+      width: auto;
+      margin-left: auto;
+      padding: 8px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
 
     /* Hint Card */
     .hint-card {
@@ -413,7 +421,7 @@
       to   { opacity: 1; transform: scale(1) translateY(0); }
     }
     .hint-icon { font-size: 18px; flex-shrink: 0; }
-    .hint-text { font-size: 14px; line-height: 1.5; color: var(--orange); font-family: 'Noto Sans KR', sans-serif; }
+    .hint-text { font-size: 14px; line-height: 1.5; color: var(--orange); font-family: 'Noto Sans KR', sans-serif; white-space: pre-wrap; }
 
     /* Vocab Tip Card */
     .vocab-card {
@@ -590,6 +598,8 @@
       cursor: pointer;
       font-family: 'Noto Sans KR', sans-serif;
     }
+    .btn-restart + .btn-restart { margin-top: 10px; }
+    .btn-restart:disabled { opacity: 0.4; cursor: default; }
 
     /* ===== GEMINI DOCUMENT ASSISTANT ===== */
     .ai-card { margin-top: 16px; }
@@ -700,7 +710,7 @@
         <button class="btn-check" id="btn-check" onclick="checkAnswer()">확인</button>
       </div>
       <button class="btn-next hidden" id="btn-next" onclick="nextQuestion()">다음 문제 →</button>
-      <button class="btn-skip" id="btn-skip" onclick="skipQuestion()">모르겠어요 (건너뛰기)</button>
+      <button class="btn-skip" id="btn-skip" onclick="skipQuestion()">모르겠어요(정답보기)</button>
     </div>
   </div>
 
@@ -731,7 +741,8 @@
       </div>
     </div>
 
-    <button class="btn-restart" onclick="restartCurrent()">🔄 다시 풀기</button>
+    <button class="btn-restart" onclick="restartAllQuestions()">🔄 전체다시풀기</button>
+    <button class="btn-restart" id="btn-restart-wrong" onclick="restartWrongQuestions()">↩ 오답만 다시풀기</button>
     <button class="btn-skip" onclick="goHome()" style="width:100%">홈으로 돌아가기</button>
   </div>
 
@@ -1386,6 +1397,8 @@ let currentIndex = 0;
 let score = { correct: 0, wrong: 0, skipped: 0 };
 let answered = false;
 let wrongAttempts = 0;
+let firstAttemptWrongQuestions = [];
+let fullQuizForRestart = [];
 let currentSetKey = 'all';
 let totalStats = JSON.parse(localStorage.getItem('edu_stats') || '{"done":0,"correct":0,"total":0}');
 
@@ -1406,13 +1419,46 @@ function shuffle(arr) {
   return arr;
 }
 
+function selectNaturalEnglishVoice() {
+  if (!window.speechSynthesis) return null;
+  const englishVoices = window.speechSynthesis.getVoices()
+    .filter(voice => /^en[-_]/i.test(voice.lang));
+  const preferredNames = [
+    /Microsoft Ava.*Natural/i,
+    /Microsoft Jenny.*Natural/i,
+    /Microsoft Aria.*Natural/i,
+    /Samantha.*Enhanced/i,
+    /Siri/i,
+    /Google US English/i,
+    /Samantha/i,
+    /Ava/i
+  ];
+  for (const pattern of preferredNames) {
+    const match = englishVoices.find(voice => pattern.test(voice.name));
+    if (match) return match;
+  }
+  return englishVoices.find(voice => /natural|enhanced|premium/i.test(voice.name))
+    || englishVoices.find(voice => /^en-US/i.test(voice.lang))
+    || englishVoices[0]
+    || null;
+}
+
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'en-US';
-  utt.rate = 0.9;
+  const naturalVoice = selectNaturalEnglishVoice();
+  if (naturalVoice) utt.voice = naturalVoice;
+  utt.rate = 0.92;
+  utt.pitch = 1;
   window.speechSynthesis.speak(utt);
+}
+
+// 일부 브라우저는 음성 목록을 비동기로 불러오므로 미리 준비합니다.
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', selectNaturalEnglishVoice);
 }
 
 /* ============================================================
@@ -1707,24 +1753,28 @@ function startQuiz(setKey) {
     ? QUIZ_DATA
     : QUIZ_DATA.filter(q => q.section === setKey);
   currentQuiz = shuffle([...pool]);
+  fullQuizForRestart = [...currentQuiz];
   beginQuiz();
 }
 
 function startLesson(lessonKey) {
   currentSetKey = `lesson:${lessonKey}`;
   currentQuiz = shuffle(QUIZ_DATA.filter(q => q.lesson_key === lessonKey));
+  fullQuizForRestart = [...currentQuiz];
   beginQuiz();
 }
 
 function startUploadedQuiz(firstId, lastId, lessonTitle) {
   currentSetKey = `ids:${firstId}-${lastId}`;
   currentQuiz = shuffle(QUIZ_DATA.filter(q => q.id >= firstId && q.id <= lastId));
+  fullQuizForRestart = [...currentQuiz];
   beginQuiz();
 }
 
 function beginQuiz() {
   currentIndex = 0;
   score = { correct: 0, wrong: 0, skipped: 0 };
+  firstAttemptWrongQuestions = [];
   answered = false;
   showScreen('quiz-screen');
   renderQuestion();
@@ -1745,6 +1795,14 @@ function renderQuestion() {
   $('progress-fill').style.width = pct + '%';
 
   const content = $('quiz-content');
+  const inputZone = $('input-zone');
+  const skipButton = $('btn-skip');
+  if (skipButton && inputZone && skipButton.parentElement !== inputZone) {
+    inputZone.appendChild(skipButton);
+  }
+  if (inputZone && inputZone.parentElement === content) {
+    $('quiz-screen').appendChild(inputZone);
+  }
 
   if (q.is_vocab) {
     renderVocabCard(q, content);
@@ -1781,6 +1839,11 @@ function renderQuestion() {
     </div>` : ''}
   `;
 
+  // 정답 입력창을 듣기/힌트 버튼 바로 아래에 배치합니다.
+  const helperButtons = content.querySelector('.helper-buttons');
+  helperButtons.after(inputZone);
+  helperButtons.appendChild(skipButton);
+
   // Reset input
   resetInputZone();
   $('answer-input').focus();
@@ -1788,6 +1851,14 @@ function renderQuestion() {
 }
 
 function renderVocabCard(q, content) {
+  const inputZone = $('input-zone');
+  const skipButton = $('btn-skip');
+  if (skipButton && inputZone && skipButton.parentElement !== inputZone) {
+    inputZone.appendChild(skipButton);
+  }
+  if (inputZone && inputZone.parentElement === content) {
+    $('quiz-screen').appendChild(inputZone);
+  }
   content.innerHTML = `
     <div class="section-badge">💡 어휘 카드</div>
     <div class="kr-card">
@@ -1889,7 +1960,7 @@ function checkAnswer() {
 
   if (correct) {
     // Correct!
-    score.correct++;
+    if (wrongAttempts === 0) score.correct++;
     answered = true;
     if (blank) {
       blank.textContent = target.answer;
@@ -1911,23 +1982,39 @@ function checkAnswer() {
     
   } else {
     // Wrong
-    score.wrong++;
+    if (wrongAttempts === 0) {
+      score.wrong++;
+      firstAttemptWrongQuestions.push(q);
+    }
     wrongAttempts++;
+    const finalAttempt = wrongAttempts >= 3;
     if (blank) {
-      blank.textContent = userInput || '✗';
+      blank.textContent = finalAttempt ? target.answer : (userInput || '✗');
       blank.classList.remove('typing', 'correct');
       blank.classList.add('wrong');
-      setTimeout(() => {
-        blank.classList.remove('wrong');
-        blank.textContent = '_'.repeat(target.answer.length).split('').join(' ');
-        blank.classList.add('typing');
-      }, 700);
+      if (!finalAttempt) {
+        setTimeout(() => {
+          blank.classList.remove('wrong');
+          blank.textContent = '_'.repeat(target.answer.length).split('').join(' ');
+          blank.classList.add('typing');
+        }, 700);
+      }
     }
     $('answer-input').classList.add('wrong-input');
     setTimeout(() => $('answer-input').classList.remove('wrong-input'), 500);
     $('answer-input').value = '';
     const hintPercentages = [20, 60, 100];
     showHint(q, hintPercentages[Math.min(wrongAttempts - 1, hintPercentages.length - 1)]);
+    if (finalAttempt) {
+      answered = true;
+      $('answer-input').value = target.answer;
+      $('answer-input').disabled = true;
+      $('btn-next').classList.remove('hidden');
+      $('btn-skip').classList.add('hidden');
+      $('btn-check').classList.add('hidden');
+      const text = q.en_sentence.replace(/\{[^}]+\}/g, q.targets.map(t => t.answer).join(' '));
+      setTimeout(() => speak(text), 300);
+    }
   }
 }
 
@@ -1957,9 +2044,10 @@ function showHint(q, percentage = 20) {
   hintArea.innerHTML = `
     <div class="hint-card">
       <div class="hint-icon">💬</div>
-      <div class="hint-text">정답 앞부분 ${normalizedPercentage}%: ${partialAnswer}</div>
+      <div class="hint-text"></div>
     </div>
   `;
+  hintArea.querySelector('.hint-text').textContent = partialAnswer;
 }
 
 /* ============================================================
@@ -1969,7 +2057,7 @@ function skipQuestion() {
   const q = currentQuiz[currentIndex];
   if (!q || q.is_vocab) { nextQuestion(); return; }
   
-  score.skipped++;
+  if (wrongAttempts === 0) score.skipped++;
   answered = true;
 
   // Reveal answer
@@ -2020,6 +2108,7 @@ function showResult() {
   $('rs-wrong').textContent    = score.wrong;
   $('rs-skipped').textContent  = score.skipped;
   $('rs-total').textContent    = total;
+  $('btn-restart-wrong').disabled = firstAttemptWrongQuestions.length === 0;
 
   if (pct >= 90) {
     $('result-emoji').textContent = '🏆';
@@ -2044,8 +2133,14 @@ function showResult() {
   showScreen('result-screen');
 }
 
-function restartCurrent() {
-  currentQuiz = shuffle([...currentQuiz]);
+function restartAllQuestions() {
+  currentQuiz = shuffle([...fullQuizForRestart]);
+  beginQuiz();
+}
+
+function restartWrongQuestions() {
+  if (!firstAttemptWrongQuestions.length) return;
+  currentQuiz = shuffle([...firstAttemptWrongQuestions]);
   beginQuiz();
 }
 
