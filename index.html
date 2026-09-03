@@ -1419,37 +1419,24 @@ function shuffle(arr) {
   return arr;
 }
 
-function selectNaturalEnglishVoice() {
+function selectSiriEnglishVoice() {
   if (!window.speechSynthesis) return null;
-  const englishVoices = window.speechSynthesis.getVoices()
-    .filter(voice => /^en[-_]/i.test(voice.lang));
-  const preferredNames = [
-    /Google US English/i,
-    /Siri/i,
-    /Microsoft Ava.*Natural/i,
-    /Microsoft Jenny.*Natural/i,
-    /Microsoft Aria.*Natural/i,
-    /Samantha.*Enhanced/i,
-    /Samantha/i,
-    /Ava/i
-  ];
-  for (const pattern of preferredNames) {
-    const match = englishVoices.find(voice => pattern.test(voice.name));
-    if (match) return match;
-  }
-  return englishVoices.find(voice => /natural|enhanced|premium/i.test(voice.name))
-    || englishVoices.find(voice => /^en-US/i.test(voice.lang))
-    || englishVoices[0]
-    || null;
+  return window.speechSynthesis.getVoices().find(
+    voice => /^en[-_]/i.test(voice.lang) && /siri/i.test(voice.name)
+  ) || null;
 }
 
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
+  const siriVoice = selectSiriEnglishVoice();
+  if (!siriVoice) {
+    console.warn('이 브라우저에서 Siri 영어 음성을 사용할 수 없습니다.');
+    return;
+  }
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'en-US';
-  const naturalVoice = selectNaturalEnglishVoice();
-  if (naturalVoice) utt.voice = naturalVoice;
+  utt.voice = siriVoice;
   utt.rate = 0.92;
   utt.pitch = 1;
   window.speechSynthesis.speak(utt);
@@ -1458,7 +1445,7 @@ function speak(text) {
 // 일부 브라우저는 음성 목록을 비동기로 불러오므로 미리 준비합니다.
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
-  window.speechSynthesis.addEventListener('voiceschanged', selectNaturalEnglishVoice);
+  window.speechSynthesis.addEventListener('voiceschanged', selectSiriEnglishVoice);
 }
 
 /* ============================================================
