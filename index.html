@@ -1424,12 +1424,12 @@ function selectNaturalEnglishVoice() {
   const englishVoices = window.speechSynthesis.getVoices()
     .filter(voice => /^en[-_]/i.test(voice.lang));
   const preferredNames = [
+    /Google US English/i,
+    /Siri/i,
     /Microsoft Ava.*Natural/i,
     /Microsoft Jenny.*Natural/i,
     /Microsoft Aria.*Natural/i,
     /Samantha.*Enhanced/i,
-    /Siri/i,
-    /Google US English/i,
     /Samantha/i,
     /Ava/i
   ];
