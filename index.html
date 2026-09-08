@@ -173,24 +173,6 @@
       justify-content: center;
     }
 
-    .home-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-      width: 100%;
-      margin-bottom: 12px;
-    }
-
-    .stat-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 8px 6px;
-      text-align: center;
-    }
-    .stat-num  { font-size: 17px; line-height:1.1; font-weight: 700; color: var(--primary2); }
-    .stat-label { font-size: 10px; line-height:1.1; color: var(--text2); margin-top: 2px; }
-
     /* ========================================================
        QUIZ SCREEN (말해보카 style)
     ======================================================== */
@@ -654,21 +636,6 @@
     <div class="home-logo">📚</div>
     <div class="home-title">edu_E 빈칸 퀴즈</div>
     <div class="home-subtitle">핵심 표현을 빈칸으로 채우며<br>실전 영어를 내 것으로!</div>
-
-    <div class="home-stats">
-      <div class="stat-box">
-        <div class="stat-num" id="stat-total">0</div>
-        <div class="stat-label">총 문제</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num" id="stat-done">0</div>
-        <div class="stat-label">완료</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num" id="stat-acc">—</div>
-        <div class="stat-label">정답률</div>
-      </div>
-    </div>
 
     <div class="home-card">
       <h3>📰 학습 세트 선택</h3>
@@ -1803,12 +1770,7 @@ function renderAiLessons() {
    HOME SCREEN
 ============================================================ */
 function initHome() {
-  const all   = QUIZ_DATA.filter(q => !q.is_vocab);
-  $('stat-total').textContent  = all.length;
-  $('stat-done').textContent   = totalStats.done;
-  $('stat-acc').textContent    = totalStats.total
-    ? Math.round(totalStats.correct / totalStats.total * 100) + '%'
-    : '—';
+  // 홈 화면 통계 프레임은 표시하지 않습니다.
 }
 
 function goHome() {
