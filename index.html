@@ -176,20 +176,20 @@
     .home-stats {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
+      gap: 6px;
       width: 100%;
-      margin-bottom: 24px;
+      margin-bottom: 12px;
     }
 
     .stat-box {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 16px 12px;
+      padding: 8px 6px;
       text-align: center;
     }
-    .stat-num  { font-size: 22px; font-weight: 700; color: var(--primary2); }
-    .stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+    .stat-num  { font-size: 17px; line-height:1.1; font-weight: 700; color: var(--primary2); }
+    .stat-label { font-size: 10px; line-height:1.1; color: var(--text2); margin-top: 2px; }
 
     /* ========================================================
        QUIZ SCREEN (말해보카 style)
@@ -306,6 +306,14 @@
     .kr-meaning .highlight {
       color: var(--yellow);
       font-weight: 700;
+    }
+    .kr-answer-underline {
+      color: var(--yellow);
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-color: var(--primary2);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
     }
 
     /* English Sentence */
@@ -619,6 +627,9 @@
     .ai-file-name { color:var(--text2); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .ai-btn { width:100%; margin-top:12px; padding:13px; border:0; border-radius:var(--radius-sm); background:linear-gradient(135deg,var(--primary),var(--accent)); color:white; font:inherit; font-weight:700; cursor:pointer; }
     .ai-btn:disabled { opacity:.55; cursor:wait; }
+    .ai-primary-actions, .ai-manual-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .ai-primary-actions .ai-btn { margin-top:12px; }
+    .ai-btn-secondary { margin-top:8px; padding:10px 8px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-size:13px; }
     .ai-status { min-height:20px; margin-top:10px; color:var(--text2); font-size:12px; }
     .ai-status.error { color:var(--red); }
     .ai-result { display:none; margin-top:12px; padding:14px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text); font-size:14px; line-height:1.65; white-space:pre-wrap; max-height:420px; overflow:auto; }
@@ -1502,6 +1513,70 @@ function fileToBase64(file) {
   });
 }
 
+function selectOrganizedFile() {
+  $('organized-file').click();
+}
+
+function downloadUploadTemplate() {
+  const link = document.createElement('a');
+  link.href = '/api/upload-template';
+  link.download = '학습세트_업로드_양식.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  const status = $('ai-status');
+  status.className = 'ai-status';
+  status.textContent = '엑셀 업로드 양식을 내려받았습니다.';
+}
+
+function downloadOrganizedFile() {
+  const status = $('ai-status');
+  const lessonKey = latestDownloadLessonKey || (publishedAiLessons[0] && publishedAiLessons[0].key);
+  if (!lessonKey) {
+    status.className = 'ai-status error';
+    status.textContent = '먼저 자료를 정리하거나 정리된 엑셀 파일을 업로드해 주세요.';
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = `/api/export-lesson?lessonKey=${encodeURIComponent(lessonKey)}`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  status.className = 'ai-status';
+  status.textContent = '최근에 정리한 학습세트를 엑셀 파일로 다운로드합니다.';
+}
+
+async function uploadOrganizedFile() {
+  const input = $('organized-file');
+  const file = input.files[0];
+  const status = $('ai-status');
+  if (!file) return;
+  status.className = 'ai-status';
+  status.textContent = '정리된 파일을 확인하고 있습니다…';
+  try {
+    if (file.size > 5 * 1024 * 1024) throw new Error('업로드 파일은 5MB 이하여야 합니다.');
+    if (!file.name.toLowerCase().endsWith('.xlsx')) throw new Error('XLSX 형식의 엑셀 파일을 선택해 주세요.');
+    const fileBase64 = await fileToBase64(file);
+    const response = await fetch('/api/import-lesson', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, fileBase64 })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || '정리된 파일을 업로드하지 못했습니다.');
+    const lessonKey = saveAiQuiz(data.quizTitle, data.quizItems, file.name, data.lessonKey);
+    status.textContent = `완료 · ${data.quizItems.length}문제를 등록했습니다.`;
+    startLesson(lessonKey);
+  } catch (error) {
+    status.className = 'ai-status error';
+    status.textContent = error.message.includes('fetch')
+      ? '로컬 서버에 연결할 수 없습니다. create_learning_material.bat을 먼저 실행해 주세요.'
+      : error.message;
+  } finally {
+    input.value = '';
+  }
+}
+
 async function summarizeWithGemini() {
   const file = $('ai-file').files[0];
   const status = $('ai-status');
@@ -1546,6 +1621,7 @@ function buildAiQuizItem(raw, lessonKey, id) {
     section: 'ai',
     lesson_key: lessonKey,
     kr_meaning: String(raw.korean || ''),
+    kr_answer: String(raw.koreanAnswer || ''),
     en_sentence: sentence,
     targets: [{ key, answer }],
     hint: String(raw.hint || '') || null,
@@ -1589,6 +1665,7 @@ function deleteBuiltInLesson(event, lessonKey, lessonTitle) {
 }
 
 let publishedAiLessons = [];
+let latestDownloadLessonKey = '';
 
 async function loadPublishedAiLessons() {
   try {
@@ -1610,6 +1687,7 @@ async function loadPublishedAiLessons() {
         items
       };
     }).filter(lesson => lesson.items.length);
+    if (publishedAiLessons.length) latestDownloadLessonKey = publishedAiLessons[0].key;
     publishedAiLessons.forEach(lesson => {
       if (!QUIZ_DATA.some(q => q.lesson_key === lesson.key)) QUIZ_DATA.push(...lesson.items);
     });
@@ -1628,6 +1706,7 @@ function loadAiLessons() {
 function saveAiQuiz(title, rawItems, sourceName, providedKey) {
   const lessons = getSavedAiLessons();
   const lessonKey = providedKey || `ai_${Date.now()}`;
+  latestDownloadLessonKey = lessonKey;
   let nextId = Math.max(0, ...QUIZ_DATA.map(q => Number(q.id) || 0)) + 1;
   const items = rawItems.map(raw => buildAiQuizItem(raw, lessonKey, nextId++));
   const lesson = {
@@ -1647,7 +1726,8 @@ function saveAiQuiz(title, rawItems, sourceName, providedKey) {
 
 async function deleteAiLesson(lessonKey, lessonTitle) {
   if (!confirm(`"${lessonTitle}" 학습세트를 삭제할까요?`)) return;
-  const isPublished = publishedAiLessons.some(lesson => lesson.key === lessonKey);
+  const isPublished = String(lessonKey).startsWith('generated_') ||
+    publishedAiLessons.some(lesson => lesson.key === lessonKey);
   if (isPublished) {
     try {
       const response = await fetch('/api/delete-lesson', {
@@ -1679,7 +1759,12 @@ function renderAiLessons() {
   if (!container) return;
   container.innerHTML = '';
   const merged = [...publishedAiLessons, ...getSavedAiLessons()]
-    .filter((lesson, index, all) => all.findIndex(item => item.key === lesson.key) === index);
+    .filter((lesson, index, all) => all.findIndex(item => item.key === lesson.key) === index)
+    .sort((a, b) => {
+      const bTime = Date.parse(b.createdAt || '') || 0;
+      const aTime = Date.parse(a.createdAt || '') || 0;
+      return bTime - aTime;
+    });
   merged.forEach(lesson => {
     const row = document.createElement('div');
     row.className = 'lesson-item';
@@ -1802,12 +1887,16 @@ function renderQuestion() {
     const placeholder = '_'.repeat(t.answer.length).split('').join(' ');
     enHtml = enHtml.replace(`{${t.key}}`, `<span class="blank-box" id="blank-${t.key}">${placeholder}</span>`);
   });
+  let krHtml = q.kr_meaning;
+  if (q.kr_answer && krHtml.includes(q.kr_answer)) {
+    krHtml = krHtml.replace(q.kr_answer, `<span class="kr-answer-underline">${q.kr_answer}</span>`);
+  }
 
   content.innerHTML = `
     <div class="section-badge">${sectionLabel(q.section)}</div>
     <div class="kr-card">
       <div class="kr-card-label">한국어 해석</div>
-      <div class="kr-meaning">${q.kr_meaning}</div>
+      <div class="kr-meaning">${krHtml}</div>
     </div>
     <div class="en-card">
       <div class="en-card-label">영어 문장</div>
@@ -2057,7 +2146,6 @@ function skipQuestion() {
       blank.style.borderBottomColor = 'var(--orange)';
     }
   });
-
   showHint(q);
   $('btn-next').classList.remove('hidden');
   $('btn-skip').classList.add('hidden');
