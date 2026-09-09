@@ -1942,10 +1942,12 @@ function renderQuestion() {
 
   // Reset input
   resetInputZone();
-  $('answer-input').blur();
   scrollTop();
-  // 새 문제에서는 기기 종류와 관계없이 자동 포커스하지 않습니다.
-  // 사용자가 입력창을 직접 눌렀을 때만 키보드가 열립니다.
+  // 새 문제가 표시되면 바로 답을 입력할 수 있도록 입력창에 커서를 둡니다.
+  const answerInput = $('answer-input');
+  answerInput.focus({ preventScroll: true });
+  const cursorPosition = answerInput.value.length;
+  answerInput.setSelectionRange(cursorPosition, cursorPosition);
 }
 
 function renderVocabCard(q, content) {
