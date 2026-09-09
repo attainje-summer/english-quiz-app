@@ -412,6 +412,7 @@
     }
     .hint-icon { font-size: 18px; flex-shrink: 0; }
     .hint-text { font-size: 14px; line-height: 1.5; color: var(--orange); font-family: 'Noto Sans KR', sans-serif; white-space: pre-wrap; }
+    .hint-card.full-answer .hint-text { font-weight: 700; color: var(--green); }
 
     /* Vocab Tip Card */
     .vocab-card {
@@ -2056,6 +2057,8 @@ function playTTS(btn) {
 ============================================================ */
 function onInputKeydown(e) {
   if (e.key === 'Enter') {
+    // 제출에 사용한 Enter가 새로 포커스된 '다음 문제' 버튼까지 누르지 않게 합니다.
+    e.preventDefault();
     if (answered) nextQuestion();
     else checkAnswer();
   }
@@ -2126,6 +2129,8 @@ function checkAnswer() {
       blank.classList.add('wrong');
       if (!finalAttempt) {
         setTimeout(() => {
+          // 사용자가 그 사이 세 번째 답까지 제출했다면 공개된 정답을 다시 가리지 않습니다.
+          if (answered) return;
           blank.classList.remove('wrong');
           blank.textContent = '_'.repeat(target.answer.length).split('').join(' ');
           blank.classList.add('typing');
@@ -2141,12 +2146,18 @@ function checkAnswer() {
       answered = true;
       $('answer-input').value = target.answer;
       $('answer-input').disabled = true;
+      // 마지막 시도에서는 힌트 영역에도 전체 정답을 확실히 표시합니다.
+      showHint(q, 100);
       const nextButton = $('btn-next');
       nextButton.classList.remove('hidden');
       $('btn-skip').classList.add('hidden');
       $('btn-check').classList.add('hidden');
-      // 세 번째 오답 후에는 Enter 키로 곧바로 다음 문제로 넘어갈 수 있게 합니다.
-      nextButton.focus({ preventScroll: true });
+      // 제출에 사용한 Enter 키를 놓은 뒤 포커스를 옮겨 자동으로 다음 문제로 넘어가는 것을 막습니다.
+      setTimeout(() => {
+        if (answered && !nextButton.classList.contains('hidden')) {
+          nextButton.focus({ preventScroll: true });
+        }
+      }, 150);
       const text = q.en_sentence.replace(/\{[^}]+\}/g, q.targets.map(t => t.answer).join(' '));
       setTimeout(() => speak(text), 300);
     }
@@ -2163,26 +2174,35 @@ function showHint(q, percentage = 20) {
   const answer = String(q.targets?.[0]?.answer || '');
   if (!answer) return;
   const normalizedPercentage = Math.max(20, Math.min(100, percentage));
+  const isFullAnswer = normalizedPercentage === 100;
   const visibleCharacters = Math.max(
     1,
     Math.floor(answer.replace(/\s/g, '').length * normalizedPercentage / 100)
   );
   let shown = 0;
-  const partialAnswer = [...answer].map(character => {
-    if (/\s/.test(character)) return ' ';
-    if (shown < visibleCharacters) {
-      shown++;
-      return character;
-    }
-    return '_';
-  }).join(' ');
+  const partialAnswer = isFullAnswer
+    ? answer
+    : [...answer].map(character => {
+        if (/\s/.test(character)) return ' ';
+        if (shown < visibleCharacters) {
+          shown++;
+          return character;
+        }
+        return '_';
+      }).join(' ');
   hintArea.innerHTML = `
-    <div class="hint-card">
+    <div class="hint-card${isFullAnswer ? ' full-answer' : ''}">
       <div class="hint-icon">💬</div>
       <div class="hint-text"></div>
     </div>
   `;
   hintArea.querySelector('.hint-text').textContent = partialAnswer;
+
+  // 전체 정답은 모바일 키보드에 가리지 않도록 영어 문장 바로 아래에 표시합니다.
+  if (isFullAnswer) {
+    const answerInputSlot = $('quiz-content').querySelector('#answer-input-slot');
+    if (answerInputSlot) $('quiz-content').insertBefore(hintArea, answerInputSlot);
+  }
 }
 
 /* ============================================================

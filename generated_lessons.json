@@ -1,5 +1,205 @@
 [
   {
+    "key": "generated_20260909_230224_341880",
+    "title": "2026. 9. 9 복습",
+    "source": "2026. 9. 9 복습자료.hwp",
+    "createdAt": "2026-09-09T23:02:24.341880+00:00",
+    "items": [
+      {
+        "sourceId": "BLUE_BOLD_001",
+        "english": "I couldn't do anything to help her besides literally rush her to the hospital.",
+        "korean": "말 그대로 빨리 아이를 병원에 데려가는 것 말고는 제가 딱히 할 수 있는 게 없었죠.",
+        "answer": "rush her to the hospital",
+        "koreanAnswer": "병원에 데려가는 것",
+        "hint": "병원으로 급히 데려가다"
+      },
+      {
+        "sourceId": "BLUE_BOLD_002",
+        "english": "He had burns on his face, his eye swelling shut.",
+        "korean": "아이가 얼굴에 화상을 입었고, 눈은 부어서 감긴 채",
+        "answer": "had burns on his face",
+        "koreanAnswer": "얼굴에 화상을 입었고",
+        "hint": "얼굴에 화상을 입다"
+      },
+      {
+        "sourceId": "BLUE_BOLD_003",
+        "english": "They've seen a dramatic spike in cases over the last six months.",
+        "korean": "지난 6개월간 이런 화상사고가 급증하는 걸 목격했다.",
+        "answer": "dramatic spike",
+        "koreanAnswer": "급증하는 걸",
+        "hint": "극적인 급증"
+      },
+      {
+        "sourceId": "BLUE_BOLD_004",
+        "english": "What are some of these children needing after this gel-like substance gets on their skin?",
+        "korean": "이 젤 같은 물질이 피부에 들러붙은 후 아이들에게 필요한 것은 무엇인가요?",
+        "answer": "gets on their skin",
+        "koreanAnswer": "피부에 들러붙은",
+        "hint": "피부에 들러붙다"
+      },
+      {
+        "sourceId": "BLUE_BOLD_005",
+        "english": "Its maker, Boston-based Schylling Toys, warns cubes should not be left in cars or direct sun.",
+        "korean": "Boston에 본사를 둔 NeeDoh제조사 Schylling Toys는 말랑이 큐브들을 차에 놔두거나 직사광선을 쬐게 해서는 안 된다고 경고합니다.",
+        "answer": "direct sun",
+        "koreanAnswer": "직사광선",
+        "hint": "직사광선"
+      },
+      {
+        "sourceId": "BLUE_BOLD_006",
+        "english": "To take down content containing NeeDoh product misuse.",
+        "korean": "Needoh 제품을 잘못된 방식으로 사용하는 내용이 담긴 컨텐츠를 내리기 위해",
+        "answer": "take down content",
+        "koreanAnswer": "컨텐츠를 내리기",
+        "hint": "콘텐츠를 내리다"
+      },
+      {
+        "sourceId": "BLUE_BOLD_007",
+        "english": "There are knockoffs.",
+        "korean": "모조품들도 있잖아요.",
+        "answer": "knockoffs",
+        "koreanAnswer": "모조품들",
+        "hint": "모조품, 짝퉁"
+      },
+      {
+        "sourceId": "BLUE_BOLD_008",
+        "english": "Certainly some knowledge here that needs to be gained.",
+        "korean": "분명 이 부분에서 인지해야할 지식이 있습니다.",
+        "answer": "knowledge here that needs to be gained",
+        "koreanAnswer": "인지해야할 지식이",
+        "hint": "습득해야 할 지식"
+      },
+      {
+        "sourceId": "BLUE_BOLD_009",
+        "english": "The glue-like substance really does get everywhere.",
+        "korean": "본드같은 물질이 완전 사방팔방으로 튀어서 붙어버리더군요.",
+        "answer": "get everywhere",
+        "koreanAnswer": "사방팔방으로 튀어서 붙어버리더군요",
+        "hint": "사방에 퍼지다/붙다"
+      },
+      {
+        "sourceId": "BLUE_BOLD_010",
+        "english": "I couldn't agree more.",
+        "korean": "저도 완전 동감합니다.",
+        "answer": "couldn't agree more",
+        "koreanAnswer": "완전 동감합니다",
+        "hint": "전적으로 동의하다"
+      },
+      {
+        "sourceId": "BLUE_BOLD_011",
+        "english": "Sexism in business?",
+        "korean": "비즈니스에서 아직도 성차별적 발언을 하다니요?",
+        "answer": "Sexism",
+        "koreanAnswer": "성차별적",
+        "hint": "성차별"
+      },
+      {
+        "sourceId": "KEY_POINT_001",
+        "english": "He rushed his wife to the hospital.",
+        "korean": "그는 아내를 병원으로 급하게 데려갔다.",
+        "answer": "rushed his wife to the hospital",
+        "koreanAnswer": "아내를 병원으로 급하게 데려갔다",
+        "hint": "~를 병원으로 급히 데려가다"
+      },
+      {
+        "sourceId": "KEY_POINT_002",
+        "english": "The Red Cross rushed medical supplies to the war zone.",
+        "korean": "적십자는 전쟁 지역으로 구호 물자를 급히 보냈다.",
+        "answer": "rushed medical supplies",
+        "koreanAnswer": "구호 물자를 급히 보냈다",
+        "hint": "물자를 급히 보내다"
+      },
+      {
+        "sourceId": "KEY_POINT_003",
+        "english": "He had burns on his face.",
+        "korean": "그는 얼굴에 화상을 입었다.",
+        "answer": "had burns on his face",
+        "koreanAnswer": "얼굴에 화상을 입었다",
+        "hint": "얼굴에 화상을 입다"
+      },
+      {
+        "sourceId": "KEY_POINT_004",
+        "english": "He suffered severe burns on both his legs in the accident.",
+        "korean": "그는 사고로 양쪽 다리에 심각한 화상을 입었다.",
+        "answer": "severe burns",
+        "koreanAnswer": "심각한 화상을",
+        "hint": "심한 화상"
+      },
+      {
+        "sourceId": "KEY_POINT_005",
+        "english": "His eye was swelling shut.",
+        "korean": "그의 눈이 너무 부풀어 올라서 감겼다.",
+        "answer": "swelling shut",
+        "koreanAnswer": "부풀어 올라서 감겼다",
+        "hint": "부어서 감기다"
+      },
+      {
+        "sourceId": "KEY_POINT_006",
+        "english": "A nurse practitioner provides a wide range of healthcare services.",
+        "korean": "전문 간호사는 광범위한 의료 서비스를 제공합니다.",
+        "answer": "nurse practitioner",
+        "koreanAnswer": "전문 간호사",
+        "hint": "전문 간호사"
+      },
+      {
+        "sourceId": "KEY_POINT_007",
+        "english": "There was a spike in interest rates last month.",
+        "korean": "지난달 금리의 급증이 있었다.",
+        "answer": "spike in interest rates",
+        "koreanAnswer": "금리의 급증",
+        "hint": "금리의 급증"
+      },
+      {
+        "sourceId": "KEY_POINT_008",
+        "english": "The gel gets on their skin easily.",
+        "korean": "그 젤은 피부에 들러붙는다.",
+        "answer": "gets on their skin",
+        "koreanAnswer": "피부에 들러붙는다",
+        "hint": "피부에 들러붙다"
+      },
+      {
+        "sourceId": "KEY_POINT_009",
+        "english": "Keep the plant out of direct sunlight.",
+        "korean": "식물을 직사광선이 들지 않는 곳에 두세요.",
+        "answer": "direct sunlight",
+        "koreanAnswer": "직사광선",
+        "hint": "직사광선"
+      },
+      {
+        "sourceId": "KEY_POINT_010",
+        "english": "The webmaster will decide whether to take down the web page or make the required changes.",
+        "korean": "웹마스터는 웹 페이지를 내릴지 또는 필요한 변경을 할지 결정할 것입니다.",
+        "answer": "take down the web page",
+        "koreanAnswer": "웹 페이지를 내릴지",
+        "hint": "웹페이지를 삭제하다/내리다"
+      },
+      {
+        "sourceId": "KEY_POINT_011",
+        "english": "Beware of cheap knockoffs.",
+        "korean": "저렴한 싸구려 모조품을 조심하세요.",
+        "answer": "knockoffs",
+        "koreanAnswer": "모조품",
+        "hint": "모조품, 가짜"
+      },
+      {
+        "sourceId": "KEY_POINT_012",
+        "english": "It will be an opportunity to gain knowledge and experience.",
+        "korean": "지식을 얻고 경험을 쌓을 수 있는 기회가 될 것입니다.",
+        "answer": "gain knowledge",
+        "koreanAnswer": "지식을 얻고",
+        "hint": "지식을 습득하다"
+      },
+      {
+        "sourceId": "KEY_POINT_013",
+        "english": "Have you experienced sexism?",
+        "korean": "성차별을 겪어본 적이 있나요?",
+        "answer": "sexism",
+        "koreanAnswer": "성차별",
+        "hint": "성차별"
+      }
+    ]
+  },
+  {
     "key": "generated_20260908_022146_636602",
     "title": "2026. 8. 26 복습",
     "source": "2026. 8. 26 복습자료.hwp",
