@@ -229,7 +229,8 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
+      scroll-behavior: auto;
     }
 
     /* Section badge */
@@ -254,7 +255,7 @@
       background: linear-gradient(135deg, rgba(124,107,255,0.15), rgba(155,141,255,0.08));
       border: 1px solid rgba(124,107,255,0.25);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 16px;
       position: relative;
       overflow: hidden;
     }
@@ -303,7 +304,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 16px;
     }
     .en-card-label {
       font-size: 11px;
@@ -453,6 +454,11 @@
       padding: 12px 20px 20px;
       background: var(--bg);
       border-top: 1px solid var(--border);
+    }
+    .quiz-content > .input-zone {
+      width: 100%;
+      padding: 0 0 12px;
+      border-top: 0;
     }
 
     .input-row {
@@ -1884,8 +1890,12 @@ function renderQuestion() {
 
   // Reset input
   resetInputZone();
-  $('answer-input').focus();
   scrollTop();
+  // 모바일에서는 자동 포커스가 키보드를 열고 입력창을 화면 중앙으로
+  // 이동시키므로 사용자가 누를 때까지 포커스하지 않습니다.
+  if (window.matchMedia('(pointer: fine)').matches) {
+    $('answer-input').focus({ preventScroll: true });
+  }
 }
 
 function renderVocabCard(q, content) {
@@ -1946,7 +1956,14 @@ function resetInputZone() {
 }
 
 function scrollTop() {
-  $('quiz-content').scrollTop = 0;
+  const content = $('quiz-content');
+  content.scrollTop = 0;
+  $('quiz-screen').scrollTop = 0;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  requestAnimationFrame(() => {
+    content.scrollTop = 0;
+    window.scrollTo(0, 0);
+  });
 }
 
 /* ============================================================
@@ -2125,6 +2142,7 @@ function skipQuestion() {
 }
 
 function nextQuestion() {
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   currentIndex++;
   if (currentIndex >= currentQuiz.length) {
     showResult();
