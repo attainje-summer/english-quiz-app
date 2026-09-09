@@ -625,6 +625,23 @@
     .ai-copy { border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--text2); padding:7px 10px; cursor:pointer; }
     @media (max-width:520px) { .ai-row { grid-template-columns:1fr; } }
 
+    /* 낮은 휴대폰 화면에서도 해석부터 입력창까지 한 화면에 최대한 표시 */
+    @media (max-height: 740px) {
+      .quiz-topbar { padding: 8px 16px 6px; }
+      .btn-back { width: 32px; height: 32px; }
+      .quiz-content { padding: 4px 16px 0; gap: 8px; }
+      .section-badge { padding: 3px 9px; font-size: 10px; }
+      .kr-card, .en-card { padding: 12px 14px; border-radius: 12px; }
+      .kr-card-label, .en-card-label { margin-bottom: 6px; }
+      .kr-meaning { font-size: 15px; line-height: 1.45; }
+      .en-sentence { font-size: 16px; line-height: 1.55; }
+      .tts-btn { padding: 6px 12px; font-size: 12px; }
+      .helper-buttons .btn-skip { padding: 6px 10px; }
+      .quiz-content > .input-zone { padding-bottom: 6px; }
+      .input-row { margin-bottom: 6px; }
+      #answer-input, .btn-check { padding-top: 10px; padding-bottom: 10px; }
+    }
+
     /* ===== UTILS ===== */
     .hidden { display: none !important; }
 
@@ -1890,12 +1907,10 @@ function renderQuestion() {
 
   // Reset input
   resetInputZone();
+  $('answer-input').blur();
   scrollTop();
-  // 모바일에서는 자동 포커스가 키보드를 열고 입력창을 화면 중앙으로
-  // 이동시키므로 사용자가 누를 때까지 포커스하지 않습니다.
-  if (window.matchMedia('(pointer: fine)').matches) {
-    $('answer-input').focus({ preventScroll: true });
-  }
+  // 새 문제에서는 기기 종류와 관계없이 자동 포커스하지 않습니다.
+  // 사용자가 입력창을 직접 눌렀을 때만 키보드가 열립니다.
 }
 
 function renderVocabCard(q, content) {
