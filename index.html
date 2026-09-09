@@ -233,7 +233,7 @@
       scroll-behavior: auto;
     }
 
-    /* Section badge */
+    /* Vocab cards still use the shared badge style. */
     .section-badge {
       display: inline-flex;
       align-items: center;
@@ -318,7 +318,6 @@
       gap: 6px;
     }
     .en-card-label::before { content: '🇺🇸'; font-size: 14px; }
-
     .en-sentence {
       font-size: 18px;
       line-height: 1.8;
@@ -630,9 +629,7 @@
       .quiz-topbar { padding: 8px 16px 6px; }
       .btn-back { width: 32px; height: 32px; }
       .quiz-content { padding: 4px 16px 0; gap: 8px; }
-      .section-badge { padding: 3px 9px; font-size: 10px; }
       .kr-card, .en-card { padding: 12px 14px; border-radius: 12px; }
-      .kr-card-label, .en-card-label { margin-bottom: 6px; }
       .tts-btn { padding: 6px 12px; font-size: 12px; }
       .helper-buttons .btn-skip { padding: 6px 10px; }
       .quiz-content > .input-zone { padding-bottom: 6px; }
@@ -680,7 +677,9 @@
   <div id="quiz-screen" class="screen">
 
     <div class="quiz-topbar">
-      <button class="btn-back" onclick="goHome()">‹</button>
+      <button class="btn-back" type="button" onclick="goHome()" aria-label="홈으로 이동" title="홈으로 이동">⌂</button>
+      <button class="btn-back" type="button" onclick="goPreviousQuestion()" aria-label="이전 문제" title="이전 문제">&lt;</button>
+      <button class="btn-back" type="button" onclick="goNextQuestion()" aria-label="다음 문제" title="다음 문제">&gt;</button>
       <div class="progress-container">
         <div class="progress-text" id="progress-text">1 / 10</div>
         <div class="progress-bar-track">
@@ -1397,6 +1396,7 @@ let score = { correct: 0, wrong: 0, skipped: 0 };
 let answered = false;
 let wrongAttempts = 0;
 let firstAttemptWrongQuestions = [];
+let questionResults = new Map();
 let fullQuizForRestart = [];
 let currentSetKey = 'all';
 let totalStats = JSON.parse(localStorage.getItem('edu_stats') || '{"done":0,"correct":0,"total":0}');
@@ -1799,6 +1799,43 @@ function goHome() {
   initHome();
 }
 
+function goPreviousQuestion() {
+  if (currentIndex <= 0) {
+    goHome();
+    return;
+  }
+  const previousIndex = currentIndex - 1;
+  const previousQuestion = currentQuiz[previousIndex];
+  const previousResult = questionResults.get(previousIndex);
+  if (previousResult === 'correct') score.correct = Math.max(0, score.correct - 1);
+  if (previousResult === 'wrong') {
+    score.wrong = Math.max(0, score.wrong - 1);
+    firstAttemptWrongQuestions = firstAttemptWrongQuestions.filter(q => q !== previousQuestion);
+  }
+  if (previousResult === 'skipped') {
+    score.skipped = Math.max(0, score.skipped - 1);
+    firstAttemptWrongQuestions = firstAttemptWrongQuestions.filter(q => q !== previousQuestion);
+  }
+  questionResults.delete(previousIndex);
+  currentIndex = previousIndex;
+  renderQuestion();
+}
+
+function goNextQuestion() {
+  if (currentIndex >= currentQuiz.length - 1) return;
+
+  // 답하지 않은 문제에서 다음으로 이동하면 건너뛴 문제로 기록합니다.
+  if (!answered && !questionResults.has(currentIndex)) {
+    score.skipped++;
+    questionResults.set(currentIndex, 'skipped');
+    firstAttemptWrongQuestions.push(currentQuiz[currentIndex]);
+  }
+
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  currentIndex++;
+  renderQuestion();
+}
+
 /* ============================================================
    START QUIZ
 ============================================================ */
@@ -1830,6 +1867,7 @@ function beginQuiz() {
   currentIndex = 0;
   score = { correct: 0, wrong: 0, skipped: 0 };
   firstAttemptWrongQuestions = [];
+  questionResults = new Map();
   answered = false;
   showScreen('quiz-screen');
   renderQuestion();
@@ -1876,13 +1914,10 @@ function renderQuestion() {
   }
 
   content.innerHTML = `
-    <div class="section-badge">${sectionLabel(q.section)}</div>
     <div class="kr-card">
-      <div class="kr-card-label">한국어 해석</div>
       <div class="kr-meaning">${krHtml}</div>
     </div>
     <div class="en-card">
-      <div class="en-card-label">영어 문장</div>
       <div class="en-sentence">${enHtml}</div>
     </div>
     <div id="answer-input-slot"></div>
@@ -1949,10 +1984,6 @@ function renderVocabCard(q, content) {
   $('btn-skip').classList.add('hidden');
   answered = true;
   scrollTop();
-}
-
-function sectionLabel(section) {
-  return { news: '📡 CNN 뉴스', tips: '💡 Today\'s Tips', movie: '🎬 The Intern', ai: '✨ AI 생성 자료' }[section] || section;
 }
 
 function getTargetWord(q) {
@@ -2030,7 +2061,10 @@ function checkAnswer() {
 
   if (correct) {
     // Correct!
-    if (wrongAttempts === 0) score.correct++;
+    if (wrongAttempts === 0) {
+      score.correct++;
+      questionResults.set(currentIndex, 'correct');
+    }
     answered = true;
     if (blank) {
       blank.textContent = target.answer;
@@ -2055,6 +2089,7 @@ function checkAnswer() {
     if (wrongAttempts === 0) {
       score.wrong++;
       firstAttemptWrongQuestions.push(q);
+      questionResults.set(currentIndex, 'wrong');
     }
     wrongAttempts++;
     const finalAttempt = wrongAttempts >= 3;
@@ -2127,7 +2162,11 @@ function skipQuestion() {
   const q = currentQuiz[currentIndex];
   if (!q || q.is_vocab) { nextQuestion(); return; }
   
-  if (wrongAttempts === 0) score.skipped++;
+  if (wrongAttempts === 0) {
+    score.skipped++;
+    questionResults.set(currentIndex, 'skipped');
+    firstAttemptWrongQuestions.push(q);
+  }
   answered = true;
 
   // Reveal answer
