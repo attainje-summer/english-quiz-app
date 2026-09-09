@@ -633,57 +633,12 @@
       .section-badge { padding: 3px 9px; font-size: 10px; }
       .kr-card, .en-card { padding: 12px 14px; border-radius: 12px; }
       .kr-card-label, .en-card-label { margin-bottom: 6px; }
-      .kr-meaning { font-size: 15px; line-height: 1.45; }
-      .en-sentence { font-size: 16px; line-height: 1.55; }
       .tts-btn { padding: 6px 12px; font-size: 12px; }
       .helper-buttons .btn-skip { padding: 6px 10px; }
       .quiz-content > .input-zone { padding-bottom: 6px; }
       .input-row { margin-bottom: 6px; }
       #answer-input, .btn-check { padding-top: 10px; padding-bottom: 10px; }
     }
-
-    /* 입력창 활성화로 모바일 키보드가 열린 동안의 전용 압축 화면 */
-    body.answer-focused {
-      min-height: var(--visible-app-height, 100dvh);
-      overflow: hidden;
-    }
-    body.answer-focused #app {
-      height: var(--visible-app-height, 100dvh);
-      min-height: 0;
-    }
-    body.answer-focused #quiz-screen {
-      height: 100%;
-      min-height: 0;
-      overflow: hidden;
-    }
-    body.answer-focused .quiz-topbar { padding: 4px 12px 3px; }
-    body.answer-focused .btn-back { width: 28px; height: 28px; }
-    body.answer-focused .progress-text { margin-bottom: 2px; font-size: 10px; }
-    body.answer-focused .progress-bar-track { height: 4px; }
-    body.answer-focused .quiz-content {
-      min-height: 0;
-      padding: 2px 12px 0;
-      gap: 4px;
-      overflow-y: auto;
-    }
-    body.answer-focused .section-badge,
-    body.answer-focused .helper-buttons,
-    body.answer-focused #hint-area,
-    body.answer-focused #vocab-reveal { display: none !important; }
-    body.answer-focused .kr-card,
-    body.answer-focused .en-card { padding: 7px 10px; border-radius: 10px; }
-    body.answer-focused .kr-card-label,
-    body.answer-focused .en-card-label { margin-bottom: 2px; font-size: 9px; }
-    body.answer-focused .kr-meaning { font-size: 13px; line-height: 1.3; }
-    body.answer-focused .en-sentence { font-size: 14px; line-height: 1.35; }
-    body.answer-focused .blank-box { min-width: 54px; padding: 1px 4px; }
-    body.answer-focused .quiz-content > .input-zone {
-      margin-top: auto;
-      padding: 0;
-    }
-    body.answer-focused .input-row { margin-bottom: 0; gap: 6px; }
-    body.answer-focused #answer-input,
-    body.answer-focused .btn-check { padding-top: 8px; padding-bottom: 8px; }
 
     /* ===== UTILS ===== */
     .hidden { display: none !important; }
@@ -1930,6 +1885,7 @@ function renderQuestion() {
       <div class="en-card-label">영어 문장</div>
       <div class="en-sentence">${enHtml}</div>
     </div>
+    <div id="answer-input-slot"></div>
     <div class="helper-buttons">
       <button class="tts-btn" id="tts-btn" onclick="playTTS(this)">
         🔊 듣기
@@ -1943,9 +1899,10 @@ function renderQuestion() {
     </div>` : ''}
   `;
 
-  // 정답 입력창을 듣기/힌트 버튼 바로 아래에 배치합니다.
+  // 정답 입력창을 영어 문장 바로 아래에 고정합니다.
+  const answerInputSlot = content.querySelector('#answer-input-slot');
   const helperButtons = content.querySelector('.helper-buttons');
-  helperButtons.after(inputZone);
+  answerInputSlot.appendChild(inputZone);
   helperButtons.appendChild(skipButton);
 
   // Reset input
@@ -2022,28 +1979,6 @@ function scrollTop() {
     content.scrollTop = 0;
     window.scrollTo(0, 0);
   });
-}
-
-function syncAnswerFocusLayout() {
-  const viewport = window.visualViewport;
-  const visibleHeight = Math.round(viewport ? viewport.height : window.innerHeight);
-  document.documentElement.style.setProperty('--visible-app-height', `${visibleHeight}px`);
-  if (!document.body.classList.contains('answer-focused')) return;
-  requestAnimationFrame(() => {
-    $('quiz-content').scrollTop = 0;
-    window.scrollTo(0, 0);
-  });
-}
-
-function enableAnswerFocusLayout() {
-  document.body.classList.add('answer-focused');
-  syncAnswerFocusLayout();
-}
-
-function disableAnswerFocusLayout() {
-  document.body.classList.remove('answer-focused');
-  document.documentElement.style.removeProperty('--visible-app-height');
-  scrollTop();
 }
 
 /* ============================================================
@@ -2283,13 +2218,6 @@ function restartWrongQuestions() {
    INIT
 ============================================================ */
 async function initializeApp() {
-  const answerInput = $('answer-input');
-  answerInput.addEventListener('focus', enableAnswerFocusLayout);
-  answerInput.addEventListener('blur', disableAnswerFocusLayout);
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', syncAnswerFocusLayout);
-    window.visualViewport.addEventListener('scroll', syncAnswerFocusLayout);
-  }
   configureLocalMaterialInput();
   applyHiddenBuiltInLessons();
   await loadPublishedAiLessons();
