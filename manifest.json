@@ -1,6 +1,6 @@
 {
-  "name": "edu_E 빈칸 퀴즈",
-  "short_name": "edu_E Quiz",
+  "name": "영어 퀴즈",
+  "short_name": "영어 퀴즈",
   "description": "영어 빈칸 퀴즈 학습 앱",
   "start_url": "./index.html",
   "scope": "./",

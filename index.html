@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f0e1a" />
-  <title>edu_E 빈칸 퀴즈</title>
+  <title>영어 퀴즈</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -75,7 +75,7 @@
     /* ========================================================
        HOME SCREEN
     ======================================================== */
-    #home-screen {
+    #home-screen, #blank-lessons-screen, #card-lessons-screen, #card-quiz-screen {
       justify-content: center;
       align-items: center;
       padding: 40px 24px;
@@ -152,6 +152,46 @@
       color: var(--text3);
       font-size: 18px;
     }
+
+    .quiz-mode-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: 100%;
+      max-width: 360px;
+    }
+    .quiz-mode-button {
+      min-height: 92px;
+      border: 1px solid rgba(124,107,255,0.45);
+      border-radius: 20px;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--surface), var(--surface2));
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+    .quiz-mode-button:active { transform: scale(0.98); }
+    .mode-back-button { width: 100%; margin-top: 4px; }
+
+    .card-quiz-wrap { width: 100%; max-width: 430px; }
+    .card-quiz-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .card-close { flex: 0 0 auto; width: 38px; height: 38px; border: 0; background: transparent; color: var(--text2); font-size: 30px; cursor: pointer; }
+    .card-progress-track { flex: 1; height: 10px; overflow: hidden; border-radius: 999px; background: var(--surface2); }
+    .card-progress-fill { height: 100%; border-radius: inherit; width: 0; background: linear-gradient(90deg, #75d70b, #9ae52b); transition: width .3s ease; }
+    .card-progress-text { min-width: 44px; color: var(--text2); font-size: 13px; text-align: right; }
+    .card-instruction { margin: 12px 0 28px; font-size: 19px; font-weight: 700; line-height: 1.35; }
+    .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+    .match-card { min-height: 84px; padding: 12px 10px; border: 2px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(34,31,53,.82); color: var(--text); font-size: 15px; font-weight: 650; line-height: 1.3; cursor: pointer; transition: border-color .16s, background .16s, opacity .25s, transform .16s; }
+    .match-card:active { transform: scale(.98); }
+    .match-card.selected { border-color: #53b8df; background: rgba(83,184,223,.13); }
+    .match-card.wrong { border-color: var(--red); background: rgba(255,92,106,.14); }
+    .match-card.matched { border-color: #79d21a; color: #8ddd31; background: rgba(121,210,26,.14); }
+    .match-card.cleared { opacity: .25; pointer-events: none; }
+    .card-round-complete { display: none; margin-top: 28px; padding: 18px; border-radius: 14px; background: rgba(121,210,26,.08); color: #8ddd31; font-size: 18px; font-weight: 700; }
+    .card-round-complete.show { display: block; }
+    .card-continue { display: none; width: 100%; margin-top: 14px; padding: 15px; border: 0; border-radius: 10px; background: #7fd914; color: #142006; font-size: 16px; font-weight: 800; cursor: pointer; }
+    .card-continue.show { display: block; }
     .lesson-delete {
       display: none;
       border: 1px solid rgba(255, 107, 157, 0.45);
@@ -650,11 +690,19 @@
 <body>
 <div id="app">
 
-  <!-- ====== HOME SCREEN ====== -->
+  <!-- ====== QUIZ MODE HOME ====== -->
   <div id="home-screen" class="screen active">
-    <div class="home-logo">📚</div>
-    <div class="home-title">edu_E 빈칸 퀴즈</div>
-    <div class="home-subtitle">핵심 표현을 빈칸으로 채우며<br>실전 영어를 내 것으로!</div>
+    <div class="quiz-mode-buttons">
+      <button class="quiz-mode-button" type="button" onclick="openCardQuizMode()">카드퀴즈</button>
+      <button class="quiz-mode-button" type="button" onclick="openBlankQuizMode()">빈칸퀴즈</button>
+    </div>
+  </div>
+
+  <!-- ====== BLANK QUIZ LESSONS ====== -->
+  <div id="blank-lessons-screen" class="screen">
+    <button class="btn-skip mode-back-button" type="button" onclick="goHome()">홈으로 돌아가기</button>
+    <div class="home-title">빈칸퀴즈</div>
+    <div class="home-subtitle">학습세트를 선택하세요.</div>
 
     <div class="home-card">
       <h3>📰 학습 세트 선택</h3>
@@ -671,6 +719,38 @@
     </div>
 
     <!-- LOCAL_MATERIAL_INPUT -->
+  </div>
+
+  <!-- ====== CARD QUIZ LESSONS ====== -->
+  <div id="card-lessons-screen" class="screen">
+    <div class="home-title">카드퀴즈</div>
+    <div class="home-subtitle">학습세트를 선택하세요.</div>
+    <div class="home-card">
+      <h3>📰 학습 세트 선택</h3>
+      <div id="card-generated-lessons"></div>
+      <div class="lesson-item" onclick="prepareCardQuizByIds(1, 20, '2026. 7. 8 전체 복습')">
+        <div class="lesson-info">
+          <div class="lesson-title">2026. 7. 8 전체 복습</div>
+          <div class="lesson-meta">카드 퀴즈 · 20문제</div>
+        </div>
+        <div class="lesson-arrow">›</div>
+      </div>
+    </div>
+    <button class="btn-skip mode-back-button" type="button" onclick="goHome()">홈으로 돌아가기</button>
+  </div>
+
+  <div id="card-quiz-screen" class="screen">
+    <div class="card-quiz-wrap">
+      <div class="card-quiz-topbar">
+        <button class="card-close" type="button" onclick="openCardQuizMode()" aria-label="카드퀴즈 닫기">×</button>
+        <div class="card-progress-track"><div class="card-progress-fill" id="card-progress-fill"></div></div>
+        <div class="card-progress-text" id="card-progress-text">1 / 1</div>
+      </div>
+      <div class="card-instruction" id="card-quiz-title">의미가 일치하는 카드끼리 짝을 지으세요.</div>
+      <div class="match-grid" id="match-grid"></div>
+      <div class="card-round-complete" id="card-round-complete">● 훌륭해요!</div>
+      <button class="card-continue" id="card-continue" type="button" onclick="continueCardQuiz()">계속하기</button>
+    </div>
   </div>
 
 
@@ -1398,6 +1478,12 @@ let answered = false;
 let wrongAttempts = 0;
 let firstAttemptWrongQuestions = [];
 let questionResults = new Map();
+let practiceMode = false;
+let cardRounds = [];
+let cardRoundIndex = 0;
+let selectedKoreanCard = null;
+let selectedEnglishCard = null;
+let matchedCardIds = new Set();
 let fullQuizForRestart = [];
 let currentSetKey = 'all';
 let totalStats = JSON.parse(localStorage.getItem('edu_stats') || '{"done":0,"correct":0,"total":0}');
@@ -1825,6 +1911,184 @@ function goHome() {
   initHome();
 }
 
+function openBlankQuizMode() {
+  showScreen('blank-lessons-screen');
+  initHome();
+}
+
+function openCardQuizMode() {
+  renderCardLessons();
+  showScreen('card-lessons-screen');
+}
+
+function renderCardLessons() {
+  const container = $('card-generated-lessons');
+  if (!container) return;
+  container.innerHTML = '';
+  const merged = [...publishedAiLessons, ...getSavedAiLessons()]
+    .filter((lesson, index, all) => all.findIndex(item => item.key === lesson.key) === index)
+    .sort((a, b) => (Date.parse(b.createdAt || '') || 0) - (Date.parse(a.createdAt || '') || 0));
+  merged.forEach(lesson => {
+    const row = document.createElement('div');
+    row.className = 'lesson-item';
+    row.onclick = () => prepareCardQuizByLesson(lesson.key, cleanLessonTitle(lesson.source || lesson.title));
+    row.innerHTML = `
+      <div class="lesson-info">
+        <div class="lesson-title"></div>
+        <div class="lesson-meta">카드 퀴즈 · ${lesson.items.length}문제</div>
+      </div>
+      <div class="lesson-arrow">›</div>
+    `;
+    row.querySelector('.lesson-title').textContent = cleanLessonTitle(lesson.source || lesson.title);
+    container.appendChild(row);
+  });
+}
+
+function prepareCardQuizByLesson(lessonKey, lessonTitle) {
+  currentQuiz = QUIZ_DATA.filter(q => q.lesson_key === lessonKey);
+  beginCardQuiz(lessonTitle);
+}
+
+function prepareCardQuizByIds(firstId, lastId, lessonTitle) {
+  currentQuiz = QUIZ_DATA.filter(q => q.id >= firstId && q.id <= lastId);
+  beginCardQuiz(lessonTitle);
+}
+
+function beginCardQuiz(lessonTitle) {
+  const seenEnglishAnswers = new Set();
+  const pairs = currentQuiz
+    .filter(q => !q.is_vocab && q.targets?.[0]?.answer)
+    .map((q, index) => ({
+      id: `card-${q.id ?? index}-${index}`,
+      korean: String(q.kr_answer || q.hint || q.kr_meaning || '').trim(),
+      english: String(q.targets[0].answer).trim()
+    }))
+    .filter(pair => {
+      if (!pair.korean || !pair.english) return false;
+      const normalizedEnglish = pair.english
+        .toLocaleLowerCase('en-US')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (seenEnglishAnswers.has(normalizedEnglish)) return false;
+      seenEnglishAnswers.add(normalizedEnglish);
+      return true;
+    });
+
+  cardRounds = [];
+  const randomizedPairs = shuffle([...pairs]);
+  for (let index = 0; index < randomizedPairs.length; index += 3) {
+    cardRounds.push(randomizedPairs.slice(index, index + 3));
+  }
+  cardRoundIndex = 0;
+  $('card-quiz-title').textContent = '의미가 일치하는 카드끼리 짝을 지으세요.';
+  $('card-quiz-screen').dataset.lessonTitle = lessonTitle || '카드퀴즈';
+  showScreen('card-quiz-screen');
+  renderCardRound();
+}
+
+function renderCardRound() {
+  const grid = $('match-grid');
+  const complete = $('card-round-complete');
+  const continueButton = $('card-continue');
+  selectedKoreanCard = null;
+  selectedEnglishCard = null;
+  matchedCardIds = new Set();
+  complete.classList.remove('show');
+  continueButton.classList.remove('show');
+
+  if (!cardRounds.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--text2)">카드로 만들 수 있는 빈칸 문제가 없습니다.</div>';
+    $('card-progress-text').textContent = '0 / 0';
+    $('card-progress-fill').style.width = '0%';
+    return;
+  }
+
+  const round = cardRounds[cardRoundIndex];
+  const koreanCards = shuffle([...round]);
+  const englishCards = shuffle([...round]);
+  grid.innerHTML = '';
+  const rows = Math.max(koreanCards.length, englishCards.length);
+  for (let index = 0; index < rows; index++) {
+    if (koreanCards[index]) grid.appendChild(createMatchCard(koreanCards[index], 'korean'));
+    if (englishCards[index]) grid.appendChild(createMatchCard(englishCards[index], 'english'));
+  }
+  $('card-progress-text').textContent = `${cardRoundIndex + 1} / ${cardRounds.length}`;
+  $('card-progress-fill').style.width = `${(cardRoundIndex / cardRounds.length) * 100}%`;
+}
+
+function createMatchCard(pair, side) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'match-card';
+  button.dataset.pairId = pair.id;
+  button.dataset.side = side;
+  button.textContent = side === 'korean' ? pair.korean : pair.english;
+  button.onclick = () => selectMatchCard(button, pair, side);
+  return button;
+}
+
+function selectMatchCard(button, pair, side) {
+  if (matchedCardIds.has(pair.id) || button.classList.contains('cleared')) return;
+  const selected = side === 'korean' ? selectedKoreanCard : selectedEnglishCard;
+  if (selected?.button === button) {
+    button.classList.remove('selected');
+    if (side === 'korean') selectedKoreanCard = null;
+    else selectedEnglishCard = null;
+    return;
+  }
+  document.querySelectorAll(`.match-card[data-side="${side}"].selected`).forEach(card => card.classList.remove('selected'));
+  button.classList.add('selected');
+  if (side === 'korean') selectedKoreanCard = { button, pair };
+  else selectedEnglishCard = { button, pair };
+  if (selectedKoreanCard && selectedEnglishCard) checkCardMatch();
+}
+
+function checkCardMatch() {
+  const koreanSelection = selectedKoreanCard;
+  const englishSelection = selectedEnglishCard;
+  const isMatch = koreanSelection.pair.id === englishSelection.pair.id;
+  selectedKoreanCard = null;
+  selectedEnglishCard = null;
+
+  if (!isMatch) {
+    koreanSelection.button.classList.add('wrong');
+    englishSelection.button.classList.add('wrong');
+    setTimeout(() => {
+      koreanSelection.button.classList.remove('selected', 'wrong');
+      englishSelection.button.classList.remove('selected', 'wrong');
+    }, 450);
+    return;
+  }
+
+  matchedCardIds.add(koreanSelection.pair.id);
+  [koreanSelection.button, englishSelection.button].forEach(card => card.classList.add('matched'));
+  speak(englishSelection.pair.english);
+  setTimeout(() => {
+    [koreanSelection.button, englishSelection.button].forEach(card => card.classList.add('cleared'));
+  }, 400);
+
+  if (matchedCardIds.size === cardRounds[cardRoundIndex].length) {
+    setTimeout(() => {
+      $('card-progress-fill').style.width = `${((cardRoundIndex + 1) / cardRounds.length) * 100}%`;
+      $('card-round-complete').textContent = cardRoundIndex === cardRounds.length - 1
+        ? '● 카드퀴즈를 완료했어요!'
+        : '● 훌륭해요!';
+      $('card-round-complete').classList.add('show');
+      $('card-continue').textContent = cardRoundIndex === cardRounds.length - 1 ? '학습세트로 돌아가기' : '계속하기';
+      $('card-continue').classList.add('show');
+    }, 500);
+  }
+}
+
+function continueCardQuiz() {
+  if (cardRoundIndex >= cardRounds.length - 1) {
+    openCardQuizMode();
+    return;
+  }
+  cardRoundIndex++;
+  renderCardRound();
+}
+
 function goPreviousQuestion() {
   if (currentIndex <= 0) {
     goHome();
@@ -2019,14 +2283,56 @@ function getTargetWord(q) {
 }
 
 function resetInputZone() {
+  practiceMode = false;
   $('answer-input').value = '';
   $('answer-input').disabled = false;
+  $('answer-input').placeholder = '정답을 입력하세요...';
   $('answer-input').className = '';
   $('answer-input').classList.remove('hidden');
+  $('btn-check').textContent = '확인';
   $('btn-check').classList.remove('hidden');
   $('btn-next').classList.add('hidden');
   $('btn-skip').classList.remove('hidden');
   $('hint-area').innerHTML = '';
+}
+
+function startAnswerPractice() {
+  practiceMode = true;
+  const answerInput = $('answer-input');
+  answerInput.value = '';
+  answerInput.disabled = false;
+  answerInput.className = '';
+  answerInput.placeholder = '정답을 한 번 입력해보세요...';
+  $('btn-check').textContent = '연습 확인';
+  $('btn-check').classList.remove('hidden');
+  $('btn-next').classList.add('hidden');
+  $('btn-skip').classList.add('hidden');
+  answerInput.focus({ preventScroll: true });
+}
+
+function checkPracticeAnswer() {
+  const q = currentQuiz[currentIndex];
+  const answerInput = $('answer-input');
+  const targetAnswer = String(q?.targets?.[0]?.answer || '').trim();
+  const practiceAnswer = answerInput.value.trim();
+  if (!practiceAnswer) { shakeInput(); return; }
+
+  if (practiceAnswer.toLowerCase() !== targetAnswer.toLowerCase()) {
+    answerInput.classList.add('wrong-input');
+    setTimeout(() => answerInput.classList.remove('wrong-input'), 500);
+    answerInput.value = '';
+    answerInput.focus({ preventScroll: true });
+    return;
+  }
+
+  practiceMode = false;
+  answerInput.value = targetAnswer;
+  answerInput.disabled = true;
+  answerInput.classList.add('correct-input');
+  $('btn-check').classList.add('hidden');
+  const nextButton = $('btn-next');
+  nextButton.classList.remove('hidden');
+  setTimeout(() => nextButton.focus({ preventScroll: true }), 150);
 }
 
 function scrollTop() {
@@ -2059,14 +2365,15 @@ function onInputKeydown(e) {
   if (e.key === 'Enter') {
     // 제출에 사용한 Enter가 새로 포커스된 '다음 문제' 버튼까지 누르지 않게 합니다.
     e.preventDefault();
-    if (answered) nextQuestion();
+    if (practiceMode) checkPracticeAnswer();
+    else if (answered) nextQuestion();
     else checkAnswer();
   }
 }
 
 function onInputChange() {
   const q = currentQuiz[currentIndex];
-  if (!q || q.is_vocab || q.targets.length === 0) return;
+  if (!q || q.is_vocab || q.targets.length === 0 || practiceMode) return;
   const val = $('answer-input').value;
   const blank = document.getElementById(`blank-${q.targets[0].key}`);
   if (blank) {
@@ -2076,6 +2383,7 @@ function onInputChange() {
 }
 
 function checkAnswer() {
+  if (practiceMode) { checkPracticeAnswer(); return; }
   if (answered) { nextQuestion(); return; }
   const q = currentQuiz[currentIndex];
   if (!q || q.is_vocab) return;
@@ -2124,7 +2432,8 @@ function checkAnswer() {
     wrongAttempts++;
     const finalAttempt = wrongAttempts >= 3;
     if (blank) {
-      blank.textContent = finalAttempt ? target.answer : (userInput || '✗');
+      // 세 번째 오답에서도 빈칸에는 사용자가 입력한 오답을 그대로 남깁니다.
+      blank.textContent = userInput || '✗';
       blank.classList.remove('typing', 'correct');
       blank.classList.add('wrong');
       if (!finalAttempt) {
@@ -2144,20 +2453,9 @@ function checkAnswer() {
     showHint(q, hintPercentages[Math.min(wrongAttempts - 1, hintPercentages.length - 1)]);
     if (finalAttempt) {
       answered = true;
-      $('answer-input').value = target.answer;
-      $('answer-input').disabled = true;
-      // 마지막 시도에서는 힌트 영역에도 전체 정답을 확실히 표시합니다.
+      // 마지막 시도에서는 틀린 문장 아래에 완성된 정답 문장을 표시합니다.
       showHint(q, 100);
-      const nextButton = $('btn-next');
-      nextButton.classList.remove('hidden');
-      $('btn-skip').classList.add('hidden');
-      $('btn-check').classList.add('hidden');
-      // 제출에 사용한 Enter 키를 놓은 뒤 포커스를 옮겨 자동으로 다음 문제로 넘어가는 것을 막습니다.
-      setTimeout(() => {
-        if (answered && !nextButton.classList.contains('hidden')) {
-          nextButton.focus({ preventScroll: true });
-        }
-      }, 150);
+      startAnswerPractice();
       const text = q.en_sentence.replace(/\{[^}]+\}/g, q.targets.map(t => t.answer).join(' '));
       setTimeout(() => speak(text), 300);
     }
@@ -2180,8 +2478,12 @@ function showHint(q, percentage = 20) {
     Math.floor(answer.replace(/\s/g, '').length * normalizedPercentage / 100)
   );
   let shown = 0;
+  const fullBlankAnswers = (q.targets || [])
+    .map(target => String(target.answer || '').trim())
+    .filter(Boolean)
+    .join(' / ');
   const partialAnswer = isFullAnswer
-    ? answer
+    ? fullBlankAnswers
     : [...answer].map(character => {
         if (/\s/.test(character)) return ' ';
         if (shown < visibleCharacters) {
@@ -2198,7 +2500,7 @@ function showHint(q, percentage = 20) {
   `;
   hintArea.querySelector('.hint-text').textContent = partialAnswer;
 
-  // 전체 정답은 모바일 키보드에 가리지 않도록 영어 문장 바로 아래에 표시합니다.
+  // 빈칸의 전체 정답은 모바일 키보드에 가리지 않도록 영어 문장 바로 아래에 표시합니다.
   if (isFullAnswer) {
     const answerInputSlot = $('quiz-content').querySelector('#answer-input-slot');
     if (answerInputSlot) $('quiz-content').insertBefore(hintArea, answerInputSlot);
@@ -2229,11 +2531,9 @@ function skipQuestion() {
       blank.style.borderBottomColor = 'var(--orange)';
     }
   });
-  showHint(q);
-  $('btn-next').classList.remove('hidden');
-  $('btn-skip').classList.add('hidden');
-  $('btn-check').classList.add('hidden');
-  $('answer-input').disabled = true;
+  // 정답이 문장 빈칸에 주황색으로 표시되므로 별도의 초록색 정답 줄은 만들지 않습니다.
+  $('hint-area').innerHTML = '';
+  startAnswerPractice();
 
   if (q.vocab_tip) {
     const vocabReveal = document.getElementById('vocab-reveal');
